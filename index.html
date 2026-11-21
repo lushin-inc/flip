@@ -26,7 +26,7 @@ LAYOUT: On now left, In break right; one column under 1000px with On now first; 
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Figtree,system-ui,sans-serif;overflow-x:clip;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1240px;margin:0 auto;padding:clamp(18px,3vw,40px) max(4vw,14px) 48px}
 header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px}
-h1,h2,.ch,.sc{font-family:"Barlow Condensed",system-ui,sans-serif;font-weight:600}
+h1,h2,.ch{font-family:"Barlow Condensed",system-ui,sans-serif;font-weight:600}
 h1,h2,.ch{text-transform:uppercase;letter-spacing:.02em}
 h1{font-size:34px;line-height:1;margin:0}
 #upd{color:var(--mute);font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -42,10 +42,9 @@ h1{font-size:34px;line-height:1;margin:0}
 h2{font-size:22px;line-height:1;margin:14px 0 6px}
 .brk h2{color:var(--soft)}
 ul{list-style:none;margin:0;padding:0}
-.g{display:grid;grid-template-columns:40px 84px minmax(0,1fr) 150px;column-gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);min-height:68px;cursor:pointer}
+.g{display:grid;grid-template-columns:84px minmax(0,1fr) 150px;column-gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--line);min-height:68px}
 .g:first-child{border-top:0}
 .g:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:6px}
-.sc{font-size:28px;line-height:1;font-variant-numeric:tabular-nums;text-align:right}
 .ch{font-size:19px;line-height:1.02}
 .tm{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;row-gap:4px;align-items:center;font-size:16px}
 .tn{display:flex;align-items:center;min-width:0}
@@ -61,13 +60,9 @@ ul{list-style:none;margin:0;padding:0}
 .tg .m{color:var(--acc)}
 .mt{text-align:right;font-size:14px;color:var(--soft);line-height:1.35;font-variant-numeric:tabular-nums}
 .mt div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.brk .g,.brk .ch,.brk .sc,.brk .tm b{color:var(--soft)}
+.brk .g,.brk .ch,.brk .tm b{color:var(--soft)}
 .why{color:var(--ink);font-weight:500}
 .since{font-size:18px;color:var(--ink);font-weight:600}
-.bd{display:none;grid-column:2/-1;margin-top:10px;font-size:14px;color:var(--soft)}
-.open .bd{display:grid;grid-template-columns:92px 54px minmax(0,1fr);column-gap:10px;row-gap:5px}
-.bd b{color:var(--ink);font-weight:600;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.bd i{font-style:normal;font-weight:400;color:var(--mute);font-size:12px}
 .empty{color:var(--mute);padding:18px 0 14px;font-size:15px;cursor:default}
 .moved{animation:flash 1.6s ease-out}
 @keyframes flash{from{background:var(--flash)}to{background:transparent}}
@@ -89,12 +84,9 @@ ul{list-style:none;margin:0;padding:0}
 @media (max-width:1000px){.cols{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){
   .sheet,.later{padding:4px 14px 6px}
-  .g{grid-template-columns:36px minmax(0,1fr);grid-template-areas:"sc ch" "sc tm" ". mt" ". bd";row-gap:4px;column-gap:12px;align-items:start}
-  .g .sc{grid-area:sc;font-size:24px;padding-top:2px}
+  .g{grid-template-columns:minmax(0,1fr);grid-template-areas:"ch" "tm" "mt";row-gap:4px;align-items:start}
   .g .ch{grid-area:ch;font-size:15px}.g .tm{grid-area:tm}
   .g .mt{grid-area:mt;text-align:left;display:flex;gap:12px;flex-wrap:wrap}
-  .g .bd{grid-area:bd}
-  .open .bd{grid-template-columns:78px 50px minmax(0,1fr)}
   .l{grid-template-columns:70px 78px minmax(0,1fr);gap:10px}
   .l.f{grid-template-columns:78px minmax(0,1fr)}
 }
@@ -117,7 +109,7 @@ ul{list-style:none;margin:0;padding:0}
   <section class="later" id="laterWrap" hidden><h2>Coming up</h2><ul id="later"></ul></section>
   <section class="later" id="finalWrap" hidden><h2>Final</h2><ul id="final"></ul></section>
   <div class="note">
-    <p>Each game gets a score out of 100: CFP stakes (up to 40), how close and late the game is (up to 35), and what's happening right now (up to 25). Tap a game to see how its score adds up.</p>
+    <p>Games are sorted by CFP stakes, how close and late the game is, and what's happening right now.</p>
     <p>Breaks are a best guess from ESPN's play feed: timeouts, scores, quarter ends and halftime, or no new play for 2½ minutes. ESPN runs a little behind the TV.</p>
   </div>
 </div>
@@ -158,7 +150,7 @@ const STREAM_ONLY=/^(ESPN\+|Disney\+|ESPN App|ESPN Unlimited|Fubo|Sling)$/i;
 const P4=new Set(['1','4','5','8']), G6=new Set(['151','12','15','17','37','9']);
 const SB=g=>`https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=${g}&limit=300`;
 const PLAY=(e,c,p)=>`https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/events/${e}/competitions/${c}/plays/${p}`;
-const wall=new Map(), seenAt=new Map(), prev=new Map(), hist=new Map(), open=new Set();
+const wall=new Map(), seenAt=new Map(), prev=new Map(), hist=new Map();
 let games=[], lastOk=0, failing=false, busy=false;
 const is=(t,n)=>t.names.includes(n.toLowerCase());
 const watched=g=>WATCH.some(([a,b])=>(is(g.away,a)&&is(g.home,b))||(is(g.away,b)&&is(g.home,a)));
@@ -327,13 +319,11 @@ function teams(g,s){
 
 function row(g,c,s,now){
   const moved=prev.has(g.id)&&prev.get(g.id)!==c.brk?' moved':'';
-  const isOpen=open.has(g.id);
   const halfish=/^(Halftime|End of)/.test(c.why||'');
   const meta=c.brk
     ? `<div class="mt"><div><span class="why">${esc(c.why)}</span>${since(g)&&!halfish?` <span class="since" data-since="${since(g)}">${mmss((now-since(g))/1000)}</span>`:''}</div><div>${halfish?'':esc(g.detail)}</div></div>`
     : `<div class="mt"><div>${esc(g.detail)}</div><div>${esc(g.dd)}</div></div>`;
-  const bd=s.parts.map(([l,v,max,why])=>`<span>${l}</span><b>${Math.round(v)}<i>/${max}</i></b><span>${esc(why)}</span>`).join('');
-  return `<li class="g${moved}${isOpen?' open':''}" data-id="${esc(g.id)}" tabindex="0" role="button" aria-expanded="${isOpen}"><div class="sc">${s.total}</div><div class="ch">${esc(g.ch.name)}</div>${teams(g,s)}${meta}<div class="bd">${bd}</div></li>`;
+  return `<li class="g${moved}"><div class="ch">${esc(g.ch.name)}</div>${teams(g,s)}${meta}</li>`;
 }
 
 function render(){
@@ -406,7 +396,6 @@ async function poll(){
   busy=false; render();
 }
 
-function toggle(id){open.has(id)?open.delete(id):open.add(id);render()}
 
 function setTheme(t){
   document.documentElement.dataset.theme=t;
@@ -418,11 +407,6 @@ function setTheme(t){
 setTheme(document.documentElement.dataset.theme==='dark'?'dark':'light');
 document.getElementById('theme').addEventListener('click',()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
 
-for(const id of ['live','brk']){
-  const ul=document.getElementById(id);
-  ul.addEventListener('click',e=>{const li=e.target.closest('li.g');if(li)toggle(li.dataset.id)});
-  ul.addEventListener('keydown',e=>{const li=e.target.closest('li.g');if(li&&(e.key==='Enter'||e.key===' ')){e.preventDefault();toggle(li.dataset.id);const n=document.querySelector(`li.g[data-id="${li.dataset.id}"]`);if(n)n.focus()}});
-}
 render();
 poll();
 setInterval(poll,15000);
