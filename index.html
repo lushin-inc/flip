@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#F1F1EF">
 <title>Flip — college football</title>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('flip-theme')||'light'}catch(e){document.documentElement.dataset.theme='light'}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,6 +31,12 @@ h1,h2,.ch{text-transform:uppercase;letter-spacing:.02em}
 h1{font-size:34px;line-height:1;margin:0}
 #upd{color:var(--mute);font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
 #upd.bad{color:var(--acc)}
+.tgl{margin-left:auto;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:12px;background:transparent;color:var(--soft);cursor:pointer}
+.tgl:hover{background:var(--zone);color:var(--ink)}
+.tgl:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.tgl svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tgl .sun,:root[data-theme=dark] .tgl .moon{display:none}
+:root[data-theme=dark] .tgl .sun{display:block}
 .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
 .sheet{background:var(--sheet);border-radius:14px;padding:6px 20px 8px}
 h2{font-size:22px;line-height:1;margin:14px 0 6px}
@@ -97,6 +105,10 @@ ul{list-style:none;margin:0;padding:0}
   <header>
     <h1>Flip</h1>
     <span id="upd">Loading</span>
+    <button id="theme" class="tgl" type="button" aria-label="Switch to dark mode">
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+    </button>
   </header>
   <div class="cols">
     <section class="sheet live"><h2>On now</h2><ul id="live"></ul></section>
@@ -395,6 +407,16 @@ async function poll(){
 }
 
 function toggle(id){open.has(id)?open.delete(id):open.add(id);render()}
+
+function setTheme(t){
+  document.documentElement.dataset.theme=t;
+  try{localStorage.setItem('flip-theme',t)}catch(e){}
+  const b=document.getElementById('theme');
+  b.setAttribute('aria-label',t==='dark'?'Switch to light mode':'Switch to dark mode');
+  document.querySelector('meta[name=theme-color]').content=t==='dark'?'#0f1012':'#F1F1EF';
+}
+setTheme(document.documentElement.dataset.theme==='dark'?'dark':'light');
+document.getElementById('theme').addEventListener('click',()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
 
 for(const id of ['live','brk']){
   const ul=document.getElementById(id);
