@@ -163,6 +163,35 @@ ul,ol{list-style:none;margin:0;padding:0}
 .olist .rc{font-size:13px;color:var(--mute)}
 .olist .bs{grid-column:3/-1;font-size:12px;color:var(--soft)}
 .olist .bs .bad{color:var(--acc);font-weight:600}
+/* Scores */
+.sgroup{margin-top:14px}
+.sgroup>h2{margin:0 0 8px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.sgrid li{background:var(--sheet);border-radius:12px;padding:9px 12px 10px}
+.sgrid .sh{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--mute);margin-bottom:4px;white-space:nowrap}
+.sgrid .sh .lv{color:var(--ink);font-weight:600}
+.sgrid .sh .ca{color:var(--ink);font-weight:600}
+.sgrid .tm{font-size:15px;row-gap:2px}
+.sgrid .lg{width:20px;height:20px;margin-right:8px}
+.sgrid .ut{font-size:12px;font-weight:600;color:var(--acc);margin-top:4px}
+.sgrid.fin li{background:color-mix(in srgb,var(--sheet) 70%,var(--bg))}
+/* Poll */
+.pgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.pgrid>ul{background:var(--sheet);border-radius:14px;padding:4px 18px}
+.plist li{display:grid;grid-template-columns:30px 36px 26px minmax(0,1fr) auto;column-gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.plist li:first-child{border-top:0}
+.plist .pr{font:600 24px/1 "Barlow Condensed",system-ui,sans-serif;text-align:right}
+.plist .pm{font-size:12px;font-weight:600;color:var(--mute);white-space:nowrap}
+.plist .pm .up{color:var(--ink)}.plist .pm .dn{color:var(--acc)}
+.plist .lg{margin:0}
+.plist .pn{display:flex;flex-direction:column;min-width:0}
+.plist .pn em{font-style:normal;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plist .pn .bs{font-size:12px;color:var(--soft);line-height:1.3}
+.plist .pn .bs.bad{color:var(--acc);font-weight:600}
+.plist .pn .bs.q{color:var(--mute)}
+.plist .rc{font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
+.zone .plist li{grid-template-columns:30px 26px minmax(0,1fr) auto}
+.tabs .ls{display:none}
 /* Conferences */
 .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 6px;margin:0 -2px 12px;scrollbar-width:none}
 .chips button{flex:none;min-height:40px;padding:0 15px;border-radius:999px;border:0;background:var(--zone);color:var(--soft);font-weight:500;font-size:15px;cursor:pointer;white-space:nowrap}
@@ -178,11 +207,12 @@ ul,ol{list-style:none;margin:0;padding:0}
 .st tr.cut td{border-top:1px dashed var(--soft);padding:2px 0;font-size:11px;color:var(--mute);text-align:left}
 .st .div td{font:600 14px "Barlow Condensed",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.04em;color:var(--soft);padding-top:16px;border-top:0}
 @media (prefers-reduced-motion:reduce){.moved{animation:none}}
-@media (max-width:1000px){.cols,.cgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1000px){.cols,.cgrid,.pgrid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:899px){.bk{display:block}.bk .rh{margin:18px 0 8px}.bk .rh:first-child{margin-top:4px}.bk .m{margin-bottom:10px}}
 @media (max-width:759px){
   .tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;border-radius:0;justify-content:space-around;padding:4px 6px calc(4px + env(safe-area-inset-bottom));background:var(--sheet);background:color-mix(in srgb,var(--sheet) 92%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line)}
   .tabs a{flex:1;flex-direction:column;justify-content:center;gap:3px;font-size:11px;padding:6px 0;min-height:52px}
+  .tabs .lf{display:none}.tabs .ls{display:inline}
   .tabs a[aria-current=page]{background:none;box-shadow:none;color:var(--ink)}
   body{padding-bottom:calc(70px + env(safe-area-inset-bottom))}
 }
@@ -198,6 +228,11 @@ ul,ol{list-style:none;margin:0;padding:0}
   .tgp{grid-template-columns:minmax(0,1fr);gap:0}.tgp .tt{padding-top:10px;font-size:19px}
   .wbar h2{min-width:0;font-size:20px}.wbar .seg{margin-left:0}
   .spl li{grid-template-columns:62px 40px minmax(0,1fr) auto}
+  .sgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .sgrid li{padding:8px 10px}
+  .sgrid .tm{font-size:14px;column-gap:6px}
+  .sgrid .lg{width:18px;height:18px;margin-right:6px}
+  .pgrid>ul{padding:2px 14px}
   .chaos{flex-direction:column;align-items:stretch;gap:6px}
   .chaos ul{flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:4px;scrollbar-width:none}
   .chaos li{flex:none}
@@ -211,8 +246,10 @@ ul,ol{list-style:none;margin:0;padding:0}
     <span id="upd">Loading</span>
     <nav class="tabs" aria-label="Sections">
       <a href="#now" data-tab="now"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Now</a>
+      <a href="#scores" data-tab="scores"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>Scores</a>
       <a href="#bracket" data-tab="bracket"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h6v6H3M3 13h6v6H3M9 8h4v8H9M13 12h8"/></svg>Bracket</a>
-      <a href="#conferences" data-tab="conferences"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>Conferences</a>
+      <a href="#poll" data-tab="poll"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6M3 20h18"/></svg>Poll</a>
+      <a href="#conferences" data-tab="conferences"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg><span class="lf">Conferences</span><span class="ls">Confs</span></a>
       <a href="#week" data-tab="week"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</a>
     </nav>
     <div class="tools">
@@ -244,6 +281,16 @@ ul,ol{list-style:none;margin:0;padding:0}
       </div>
     </section>
 
+    <section id="v-scores" class="view" hidden>
+      <div class="wbar">
+        <button class="icb" id="sPrev" type="button" aria-label="Previous week"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <h2 id="sTitle">This week</h2>
+        <button class="icb" id="sNext" type="button" aria-label="Next week"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+        <div class="seg" id="sSeg"><button data-s="all" aria-pressed="true">All FBS</button><button data-s="top" aria-pressed="false">Top 25</button></div>
+      </div>
+      <div id="slist"></div>
+    </section>
+
     <section id="v-bracket" class="view" hidden>
       <div class="bhead">
         <div><h2 id="bTitle">Projected bracket</h2><p class="sub" id="bSub"></p></div>
@@ -252,6 +299,14 @@ ul,ol{list-style:none;margin:0;padding:0}
       <div id="bracket" class="bk"></div>
       <section class="zone" id="outW" hidden><h2>First four out</h2><ul id="out" class="olist"></ul></section>
       <div class="note" id="bNote"></div>
+    </section>
+
+    <section id="v-poll" class="view" hidden>
+      <div class="bhead"><div><h2>Projected AP Top 25</h2><p class="sub" id="pSub"></p></div></div>
+      <div class="pgrid" id="poll"></div>
+      <section class="zone" id="dropW" hidden><h2>Dropping out</h2><ul id="drop" class="plist"></ul></section>
+      <section class="zone" id="nextW" hidden><h2>Next in line</h2><ul id="next" class="plist"></ul></section>
+      <div class="note"><p>This is an estimate. It starts from the latest AP poll's voting points. A loss cuts a team's points, most of all against an unranked team, and always by enough to move it a few spots. A win over a ranked team adds points. An unranked team with two or fewer losses that beats a ranked team can enter.</p><p>Results count once a game is final or called. A live game is called when ESPN gives the leader at least a 99.7% chance, or when the trailing team needs more scores than the time left allows. Games still in progress show their live score but don't move anyone yet.</p></div>
     </section>
 
     <section id="v-conferences" class="view" hidden>
@@ -300,7 +355,7 @@ const isToday=d=>dayKey(d)===new Date().toDateString();
 const recStr=t=>t&&t.rec?`${t.rec.w}-${t.rec.l}`:'';
 const nm=t=>(t.r?'#'+t.r+' ':'')+t.n;
 
-const S={view:'now',now:{games:[],sb:null,ok:0,fail:false},rank:null,rankAt:0,bMode:'live',wSel:null,wFilter:store.get('flip-wfilter','big'),conf:store.get('flip-conf','8'),busy:false};
+const S={sFilter:store.get('flip-sfilter','all'),sSel:null,view:'now',now:{games:[],sb:null,ok:0,fail:false},rank:null,rankAt:0,bMode:'live',wSel:null,wFilter:store.get('flip-wfilter','big'),conf:store.get('flip-conf','8'),busy:false};
 let stars=store.get('flip-stars',{});
 const isStar=id=>!!stars[id];
 const wall=new Map(), seenAt=new Map(), prev=new Map(), hist=new Map(), OPEN=new Set(), D=new Map(), cache=new Map(), clk=new Map(), initialPlays=new Set();
@@ -602,11 +657,11 @@ async function loadRank(){
   if(S.rank&&Date.now()-S.rankAt<600000) return;
   try{
     const j=await getJSON(B+'/rankings',0);
-    const mk=x=>({id:String(x.team.id),n:x.team.location||x.team.nickname,abbr:x.team.abbreviation,color:x.team.color,conf:String((x.team.groups&&x.team.groups.id)||''),confName:x.conference||'',r:x.current,rec:x.recordSummary&&x.recordSummary!=='0-0'?recParse(x.recordSummary):null});
+    const mk=x=>({pts:+x.points||0,id:String(x.team.id),n:x.team.location||x.team.nickname,abbr:x.team.abbreviation,color:x.team.color,conf:String((x.team.groups&&x.team.groups.id)||''),confName:x.conference||'',r:x.current,rec:x.recordSummary&&x.recordSummary!=='0-0'?recParse(x.recordSummary):null});
     const cfp=j.rankings.find(p=>p.type==='cfp');
     const ap=j.rankings.find(p=>p.type==='ap')||j.rankings.find(p=>/^AP/i.test(p.name||''));
     S.rank={cfp:cfp?{date:Date.parse(cfp.date),label:(cfp.occurrence&&cfp.occurrence.displayValue)||'',list:cfp.ranks.map(mk)}:null,
-            ap:ap?{list:ap.ranks.map(mk),others:(ap.others||[]).map(x=>({...mk(x),r:null}))}:null};
+            ap:ap?{date:Date.parse(ap.date),label:(ap.occurrence&&ap.occurrence.displayValue)||'',list:ap.ranks.map(mk),others:(ap.others||[]).map(x=>({...mk(x),r:null}))}:null};
     S.rankAt=Date.now();
   }catch(e){}
 }
@@ -819,6 +874,119 @@ async function renderConf(){
   $('#cNote').innerHTML='<p>Playoff shows where each team lands in the projected bracket on the Bracket tab. Standings order is ESPN\'s and may not reflect every tiebreaker.</p>';
 }
 
+// ---------- Called games ----------
+// A live game is called when ESPN gives the leader at least 99.7%, or the trailing team
+// needs more scores (8 points each) than the time left allows in the 4th quarter.
+function called(g){
+  if(g.state!=='in'||g.period>=5) return false;
+  const a=+g.away.s||0,h=+g.home.s||0,m=Math.abs(a-h); if(!m) return false;
+  const hw=g.hwp!=null?g.hwp:(hist.get(g.id)||{}).wp;
+  if(hw!=null&&(a>h?1-hw:hw)>=.997) return true;
+  if(g.period<4) return false;
+  const need=Math.ceil(m/8);
+  return need>=2&&g.clock<60+150*(need-1);
+}
+
+// ---------- Scores ----------
+function scard(g){
+  const a=+g.away.s,h=+g.home.s,sc=g.state!=='pre';
+  const lead=sc&&a!==h?(a>h?'a':'h'):'';
+  const tl=(t,side)=>`<span class="tn">${logo(t)}${rk(t)}<em>${esc(t.n)}</em></span><b class="${sc?(lead&&lead!==side?'lo':''):'rec'}">${sc?esc(t.s):esc(recStr(t))}</b>`;
+  const cl=g.state==='in'&&called(g);
+  const st=g.state==='in'?`<span class="lv">${esc(g.detail)}</span>`:g.state==='post'?esc(g.detail):esc(/TBD/i.test(g.detail)?'TBD':fmtShort(g.date)+', '+fmtTime(g.date));
+  let tag='';
+  if(g.state==='post'&&a!==h){const W=a>h?g.away:g.home,L=a>h?g.home:g.away; if(L.r&&(!W.r||W.r>L.r+4)) tag='Upset';}
+  return `<li><div class="sh"><span>${st}${cl?' <span class="ca">Called</span>':''}</span><span>${esc(g.ch.name)}</span></div><div class="tm">${tl(g.away,'a')}${tl(g.home,'h')}</div>${tag?`<div class="ut">${tag}</div>`:''}</li>`;
+}
+async function renderScores(){
+  const sb=S.now.sb; if(!sb){$('#slist').innerHTML='<p class="empty">Loading</p>';return}
+  const weeks=calWeeks(sb);
+  const cur=weeks.findIndex(w=>w.type===(sb.season&&sb.season.type)&&w.value===(sb.week&&sb.week.number));
+  if(S.sSel==null) S.sSel=cur<0?0:cur;
+  S.sSel=Math.max(0,Math.min(weeks.length-1,S.sSel));
+  const w=weeks[S.sSel];
+  $('#sTitle').textContent=w?w.label:'This week';
+  $('#sPrev').disabled=S.sSel<=0; $('#sNext').disabled=S.sSel>=weeks.length-1;
+  const f=S.sFilter||'all';
+  for(const b of document.querySelectorAll('#sSeg button')) b.setAttribute('aria-pressed',String(b.dataset.s===f));
+  let games;
+  if(S.sSel===cur) games=S.now.games;
+  else{
+    if($('#slist').dataset.w!==String(S.sSel)) $('#slist').innerHTML='<p class="empty">Loading</p>';
+    try{games=(await getJSON(weekURL(w.type,w.value),60000)).events.map(parse).filter(Boolean)}catch(e){$('#slist').innerHTML='<p class="empty">Couldn\'t load this week</p>';return}
+  }
+  $('#slist').dataset.w=String(S.sSel);
+  const list=games.filter(g=>f==='all'||g.away.r||g.home.r);
+  const now=Date.now();
+  const live=list.filter(g=>g.state==='in').map(g=>({g,s:score(g,classify(g,now),now).total})).sort((a,b)=>b.s-a.s).map(x=>x.g);
+  const fin=list.filter(g=>g.state==='post').sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)||stakes(b)-stakes(a));
+  const up=list.filter(g=>g.state==='pre').sort((a,b)=>Date.parse(a.date)-Date.parse(b.date)||stakes(b)-stakes(a));
+  const grp=(t,l,cls)=>l.length?`<section class="sgroup"><h2>${t}</h2><ul class="sgrid ${cls}">${l.map(scard).join('')}</ul></section>`:'';
+  $('#slist').innerHTML=(grp('Live',live,'')+grp('Final',fin,'fin')+grp('Upcoming',up,''))||'<p class="empty">No games</p>';
+}
+
+// ---------- Projected AP poll ----------
+async function renderPoll(){
+  await loadRank();
+  const AP=S.rank&&S.rank.ap;
+  if(!AP||!AP.list.length){$('#poll').innerHTML='<p class="empty">Waiting for the AP poll</p>';return}
+  const games=(await gamesSince(AP.date||0)).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
+  const apRank=new Map(AP.list.map(t=>[t.id,t.r]));
+  const nmAP=t=>(apRank.get(t.id)?'#'+apRank.get(t.id)+' ':'')+t.n;
+  const pool=new Map();
+  AP.list.forEach(t=>pool.set(t.id,{...t,orig:t.pts,was:t.r,won:0,lost:0}));
+  (AP.others||[]).forEach(t=>{if(!pool.has(t.id)) pool.set(t.id,{...t,orig:t.pts,was:null,won:0,lost:0})});
+  const res=new Map(); let applied=0,early=0,pending=0;
+  const P1=Math.max(...AP.list.map(t=>t.pts||0),1000);
+  for(const g of games){
+    if(+g.away.id<0||+g.home.id<0) continue;
+    const kind=g.state==='post'?'final':called(g)?'called':null;
+    for(const [me,op] of [[g.away,g.home],[g.home,g.away]]) res.set(me.id,{g,me,op,kind});
+    const involved=pool.has(g.away.id)||pool.has(g.home.id);
+    if(!kind){ if(involved) pending++; continue; }
+    const a=+g.away.s,h=+g.home.s; if(a===h||!involved) continue;
+    const W=a>h?g.away:g.home, L=a>h?g.home:g.away, m=Math.abs(a-h);
+    const w=pool.get(W.id), l=pool.get(L.id), wr=apRank.get(W.id), lr=apRank.get(L.id), lOrig=l?l.orig:0;
+    applied++; if(kind==='called') early++;
+    if(l){
+      // Multiply down, but always by at least a set share of the #1 team's points, so a loss moves teams near the bottom too.
+      const f=wr&&lr&&wr<lr?.88:wr?.75:lr?(m<=7?.64:m>=21?.5:.58):.5, min=(wr&&lr&&wr<lr?.08:wr?.12:.17)*P1;
+      l.pts=Math.max(0,Math.min(l.pts*f,l.pts-min)); l.lost++;
+    }
+    if(w){ w.pts+=lr?40+.12*lOrig:5; w.won++; }
+    else if(lr){
+      const losses=W.rec?W.rec.l:9, f=losses<=2?.4:losses===3?.2:0;
+      if(f) pool.set(W.id,{id:W.id,n:W.loc||W.n,abbr:W.abbr,color:W.color,conf:W.conf,rec:W.rec,pts:f*lOrig,orig:0,was:null,won:1,lost:0,viaGame:true});
+    }
+  }
+  const order=[...pool.values()].sort((a,b)=>b.pts-a.pts);
+  const top=order.slice(0,25), topIds=new Set(top.map(t=>t.id));
+  const line=t=>{
+    const r=res.get(t.id); if(!r) return {txt:'No game this week',cls:'q'};
+    const {g,me,op,kind}=r, d=(+me.s)-(+op.s), vs=(g.home.id===me.id?'vs ':'at ')+nmAP(op);
+    if(kind==='final') return {txt:`${d>0?'Beat':'Lost to'} ${nmAP(op)} ${me.s}–${op.s}`,cls:d<0?'bad':''};
+    if(kind==='called') return {txt:`Called: ${d>0?'beating':'losing to'} ${nmAP(op)} ${me.s}–${op.s}, ${g.detail}`,cls:d<0?'bad':''};
+    if(g.state==='in') return {txt:`Live: ${d>0?'leads':d<0?'trails':'tied'} ${me.s}–${op.s} ${vs}, ${g.detail}`,cls:'q'};
+    return {txt:`${kick(g)} ${g.ch.name} ${vs}`,cls:'q'};
+  };
+  const rec=t=>{
+    if(t.viaGame){const r=res.get(t.id);return recStr(r?r.me:t)}
+    if(t.rec) return `${t.rec.w+t.won}-${t.rec.l+t.lost}`;
+    const r=res.get(t.id); if(!r||!r.me.rec) return '';
+    return r.kind==='called'?`${r.me.rec.w+(t.won)}-${r.me.rec.l+(t.lost)}`:recStr(r.me);
+  };
+  const mv=(t,i)=>t.was==null?'<span class="up">New</span>':t.was>i+1?`<span class="up">↑${t.was-i-1}</span>`:t.was<i+1?`<span class="dn">↓${i+1-t.was}</span>`:'–';
+  const row=(t,i,showMv=true)=>{const l=line(t);return `<li><span class="pr">${i+1}</span>${showMv?`<span class="pm">${mv(t,i)}</span>`:''}${logo(t)}<div class="pn"><em>${esc(t.n)}</em><span class="bs ${l.cls}">${esc(l.txt)}</span></div><span class="rc">${esc(rec(t))}</span></li>`};
+  $('#poll').innerHTML=`<ul class="plist">${top.slice(0,13).map((t,i)=>row(t,i)).join('')}</ul><ul class="plist">${top.slice(13).map((t,i)=>row(t,i+13)).join('')}</ul>`;
+  const drop=AP.list.filter(t=>!topIds.has(t.id)).map(t=>pool.get(t.id)).filter(Boolean);
+  $('#dropW').hidden=!drop.length;
+  $('#drop').innerHTML=drop.map(t=>{const l=line(t);return `<li><span class="pr">${t.was}</span>${logo(t)}<div class="pn"><em>${esc(t.n)}</em><span class="bs ${l.cls}">${esc(l.txt)}</span></div><span class="rc">${esc(rec(t))}</span></li>`}).join('');
+  const nxt=order.slice(25,30);
+  $('#nextW').hidden=!nxt.length;
+  $('#next').innerHTML=nxt.map((t,i)=>{const l=line(t);return `<li><span class="pr">${26+i}</span>${logo(t)}<div class="pn"><em>${esc(t.n)}</em><span class="bs ${l.cls}">${esc(l.txt)}</span></div><span class="rc">${esc(rec(t))}</span></li>`}).join('');
+  $('#pSub').textContent=`From the AP poll${AP.label?', '+AP.label:''}. ${applied?`${applied} result${applied>1?'s':''} applied${early?`, ${early} called early`:''}`:'No results yet'}${pending?`; ${pending} game${pending>1?'s':''} still to finish`:''}.`;
+}
+
 // ---------- Week ----------
 async function renderWeek(){
   const sb=S.now.sb; if(!sb){$('#wlist').innerHTML='<p class="empty">Loading</p>';return}
@@ -899,11 +1067,13 @@ async function fastPoll(){
 function renderView(fromPoll){
   if(S.view==='now') renderNow();
   else if(S.view==='bracket') renderBracket();
+  else if(S.view==='scores'){ if(!fromPoll||S.now.games.some(g=>g.state==='in')) renderScores(); }
+  else if(S.view==='poll') renderPoll();
   else if(S.view==='conferences'){ if(!fromPoll||S.now.games.some(g=>g.state==='in')) renderConf(); }
   else if(S.view==='week'){ if(!fromPoll||S.now.games.some(g=>g.state==='in')) renderWeek(); }
   tick();
 }
-const VIEWS=['now','bracket','conferences','week'];
+const VIEWS=['now','scores','bracket','poll','conferences','week'];
 function route(){
   const h=location.hash.slice(1);
   S.view=VIEWS.includes(h)?h:'now';
@@ -942,6 +1112,10 @@ document.addEventListener('click',e=>{
   const wb=e.target.closest('#wSeg button');
   if(wb){ S.wFilter=wb.dataset.w; store.set('flip-wfilter',S.wFilter); renderWeek(); return; }
   if(e.target.closest('#wPrev')){ S.wSel--; renderWeek(); return; }
+  if(e.target.closest('#sPrev')){ S.sSel--; renderScores(); return; }
+  if(e.target.closest('#sNext')){ S.sSel++; renderScores(); return; }
+  const sbtn=e.target.closest('#sSeg button');
+  if(sbtn){ S.sFilter=sbtn.dataset.s; store.set('flip-sfilter',S.sFilter); renderScores(); return; }
   if(e.target.closest('#wNext')){ S.wSel++; renderWeek(); return; }
   const li=e.target.closest('li.g');
   if(li&&!e.target.closest('.dt')){ const id=li.dataset.id; if(OPEN.has(id)) OPEN.delete(id); else { OPEN.add(id); loadDetail(id,!!(D.get(id)||{}).err); } renderNow(); }
