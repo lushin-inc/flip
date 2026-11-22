@@ -175,6 +175,29 @@ ul,ol{list-style:none;margin:0;padding:0}
 .sgrid .lg{width:20px;height:20px;margin-right:8px}
 .sgrid .ut{font-size:12px;font-weight:600;color:var(--acc);margin-top:4px}
 .sgrid.fin li{background:color-mix(in srgb,var(--sheet) 70%,var(--bg))}
+.wtools{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.vseg button{padding:0 10px;display:grid;place-items:center}
+.vseg svg.i{width:19px;height:19px}
+.slistv{background:var(--sheet);border-radius:14px;padding:2px 18px 4px}
+.sgroup.fin .slistv{background:color-mix(in srgb,var(--sheet) 70%,var(--bg))}
+.sr{display:grid;grid-template-columns:92px minmax(0,1fr) 34px 22px 34px minmax(0,1fr) 112px;grid-template-areas:"st aw s1 d s2 hm ch";column-gap:10px;align-items:center;min-height:48px;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
+.slistv>.sr:first-child,.sday+.sr{border-top:0}
+.sr .st{grid-area:st;font-size:13px;color:var(--mute);display:flex;flex-direction:column;line-height:1.25;white-space:nowrap}
+.sr .st b{color:var(--ink);font-weight:600}
+.sr .st .up{color:var(--acc);font-weight:600}
+.sr .st .ca{color:var(--ink);font-weight:600}
+.sr .aw{grid-area:aw;display:flex;justify-content:flex-end;align-items:center;gap:9px}
+.sr .hm{grid-area:hm;display:flex;align-items:center;gap:9px}
+.sr .nmx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr .nmx em{font-style:normal}
+.sr .lg{width:22px;height:22px;margin:0}
+.sr .s1,.sr .s2{font-weight:600;font-variant-numeric:tabular-nums;font-size:16px}
+.sr .s1{grid-area:s1;text-align:right}.sr .s2{grid-area:s2;text-align:left}
+.sr .d{grid-area:d;text-align:center;color:var(--mute);font-size:13px}
+.sr .ch2{grid-area:ch;text-align:right;font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr .lo{color:var(--mute);font-weight:500}
+.sr .rec{font-size:12px;color:var(--mute);font-weight:400}
+.sday{font:600 14px/1 "Barlow Condensed",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.04em;color:var(--soft);padding:16px 0 6px}
 /* Poll */
 .pgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
 .pgrid>ul{background:var(--sheet);border-radius:14px;padding:4px 18px}
@@ -229,6 +252,14 @@ ul,ol{list-style:none;margin:0;padding:0}
   .wbar h2{min-width:0;font-size:20px}.wbar .seg{margin-left:0}
   .spl li{grid-template-columns:62px 40px minmax(0,1fr) auto}
   .sgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .slistv{padding:2px 14px 4px}
+  .sr{grid-template-columns:minmax(0,1fr) 34px 84px;grid-template-areas:"aw s1 st" "hm s2 ch";row-gap:3px;column-gap:8px;padding:9px 0;font-size:15px}
+  .sr .aw{flex-direction:row-reverse;justify-content:flex-end}
+  .sr .s1,.sr .s2{text-align:right}
+  .sr .d{display:none}
+  .sr .st{align-items:flex-end;text-align:right;align-self:start}
+  .sr .ch2{align-self:start;font-size:12px}
+  .sr .lg{width:20px;height:20px}
   .sgrid li{padding:8px 10px}
   .sgrid .tm{font-size:14px;column-gap:6px}
   .sgrid .lg{width:18px;height:18px;margin-right:6px}
@@ -286,7 +317,10 @@ ul,ol{list-style:none;margin:0;padding:0}
         <button class="icb" id="sPrev" type="button" aria-label="Previous week"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
         <h2 id="sTitle">This week</h2>
         <button class="icb" id="sNext" type="button" aria-label="Next week"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
-        <div class="seg" id="sSeg"><button data-s="all" aria-pressed="true">All FBS</button><button data-s="top" aria-pressed="false">Top 25</button></div>
+        <div class="wtools">
+          <div class="seg vseg" id="vSeg"><button data-v="list" aria-pressed="true" aria-label="List view"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button><button data-v="cards" aria-pressed="false" aria-label="Card view"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></button></div>
+          <div class="seg" id="sSeg"><button data-s="all" aria-pressed="true">All FBS</button><button data-s="top" aria-pressed="false">Top 25</button></div>
+        </div>
       </div>
       <div id="slist"></div>
     </section>
@@ -355,7 +389,7 @@ const isToday=d=>dayKey(d)===new Date().toDateString();
 const recStr=t=>t&&t.rec?`${t.rec.w}-${t.rec.l}`:'';
 const nm=t=>(t.r?'#'+t.r+' ':'')+t.n;
 
-const S={sFilter:store.get('flip-sfilter','all'),sSel:null,view:'now',now:{games:[],sb:null,ok:0,fail:false},rank:null,rankAt:0,bMode:'live',wSel:null,wFilter:store.get('flip-wfilter','big'),conf:store.get('flip-conf','8'),busy:false};
+const S={sView:store.get('flip-sview','list'),sFilter:store.get('flip-sfilter','all'),sSel:null,view:'now',now:{games:[],sb:null,ok:0,fail:false},rank:null,rankAt:0,bMode:'live',wSel:null,wFilter:store.get('flip-wfilter','big'),conf:store.get('flip-conf','8'),busy:false};
 let stars=store.get('flip-stars',{});
 const isStar=id=>!!stars[id];
 const wall=new Map(), seenAt=new Map(), prev=new Map(), hist=new Map(), OPEN=new Set(), D=new Map(), cache=new Map(), clk=new Map(), initialPlays=new Set();
@@ -898,6 +932,18 @@ function scard(g){
   if(g.state==='post'&&a!==h){const W=a>h?g.away:g.home,L=a>h?g.home:g.away; if(L.r&&(!W.r||W.r>L.r+4)) tag='Upset';}
   return `<li><div class="sh"><span>${st}${cl?' <span class="ca">Called</span>':''}</span><span>${esc(g.ch.name)}</span></div><div class="tm">${tl(g.away,'a')}${tl(g.home,'h')}</div>${tag?`<div class="ut">${tag}</div>`:''}</li>`;
 }
+function srow(g){
+  const a=+g.away.s,h=+g.home.s,sc=g.state!=='pre';
+  const aLo=sc&&a<h, hLo=sc&&h<a;
+  const cl=g.state==='in'&&called(g);
+  let tag='';
+  if(g.state==='post'&&a!==h){const W=a>h?g.away:g.home,L=a>h?g.home:g.away; if(L.r&&(!W.r||W.r>L.r+4)) tag='<span class="up">Upset</span>';}
+  if(cl) tag='<span class="ca">Called</span>';
+  const st=g.state==='in'?`<b>${esc(g.detail)}</b>`:g.state==='post'?esc(g.detail):esc(/TBD/i.test(g.detail)?'TBD':fmtTime(g.date));
+  const nmx=t=>`<span class="nmx">${rk(t)}<em>${esc(t.n)}</em></span>`;
+  const sv=(t,lo)=>sc?`<b class="${lo?'lo':''}">${esc(t.s)}</b>`:`<b class="rec">${esc(recStr(t))}</b>`;
+  return `<li class="sr"><div class="st">${st}${tag}</div><div class="aw${aLo?' lo':''}">${nmx(g.away)}${logo(g.away)}</div><span class="s1">${sv(g.away,aLo)}</span><span class="d">${sc?'–':'at'}</span><span class="s2">${sv(g.home,hLo)}</span><div class="hm${hLo?' lo':''}">${logo(g.home)}${nmx(g.home)}</div><div class="ch2">${esc(g.ch.name)}</div></li>`;
+}
 async function renderScores(){
   const sb=S.now.sb; if(!sb){$('#slist').innerHTML='<p class="empty">Loading</p>';return}
   const weeks=calWeeks(sb);
@@ -909,6 +955,8 @@ async function renderScores(){
   $('#sPrev').disabled=S.sSel<=0; $('#sNext').disabled=S.sSel>=weeks.length-1;
   const f=S.sFilter||'all';
   for(const b of document.querySelectorAll('#sSeg button')) b.setAttribute('aria-pressed',String(b.dataset.s===f));
+  const view=S.sView||'list';
+  for(const b of document.querySelectorAll('#vSeg button')) b.setAttribute('aria-pressed',String(b.dataset.v===view));
   let games;
   if(S.sSel===cur) games=S.now.games;
   else{
@@ -921,8 +969,9 @@ async function renderScores(){
   const live=list.filter(g=>g.state==='in').map(g=>({g,s:score(g,classify(g,now),now).total})).sort((a,b)=>b.s-a.s).map(x=>x.g);
   const fin=list.filter(g=>g.state==='post').sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)||stakes(b)-stakes(a));
   const up=list.filter(g=>g.state==='pre').sort((a,b)=>Date.parse(a.date)-Date.parse(b.date)||stakes(b)-stakes(a));
-  const grp=(t,l,cls)=>l.length?`<section class="sgroup"><h2>${t}</h2><ul class="sgrid ${cls}">${l.map(scard).join('')}</ul></section>`:'';
-  $('#slist').innerHTML=(grp('Live',live,'')+grp('Final',fin,'fin')+grp('Upcoming',up,''))||'<p class="empty">No games</p>';
+  const rows=(l,days)=>{let h='',k='';for(const g of l){if(days){const d=dayKey(g.date);if(d!==k){k=d;h+=`<li class="sday">${esc(fmtDay(g.date))}</li>`}}h+=srow(g)}return h};
+  const grp=(t,l,cls,days)=>l.length?`<section class="sgroup ${cls}"><h2>${t}</h2>${view==='list'?`<ul class="slistv">${rows(l,days)}</ul>`:`<ul class="sgrid ${cls}">${l.map(scard).join('')}</ul>`}</section>`:'';
+  $('#slist').innerHTML=(grp('Live',live,'',false)+grp('Final',fin,'fin',true)+grp('Upcoming',up,'',true))||'<p class="empty">No games</p>';
 }
 
 // ---------- Projected AP poll ----------
@@ -1114,6 +1163,8 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#wPrev')){ S.wSel--; renderWeek(); return; }
   if(e.target.closest('#sPrev')){ S.sSel--; renderScores(); return; }
   if(e.target.closest('#sNext')){ S.sSel++; renderScores(); return; }
+  const vb=e.target.closest('#vSeg button');
+  if(vb){ S.sView=vb.dataset.v; store.set('flip-sview',S.sView); renderScores(); return; }
   const sbtn=e.target.closest('#sSeg button');
   if(sbtn){ S.sFilter=sbtn.dataset.s; store.set('flip-sfilter',S.sFilter); renderScores(); return; }
   if(e.target.closest('#wNext')){ S.wSel++; renderWeek(); return; }
