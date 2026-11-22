@@ -240,7 +240,7 @@ ul,ol{list-style:none;margin:0;padding:0}
       <section class="zone" id="finW" hidden><h2>Final</h2><ul id="fin" class="clist"></ul></section>
       <div class="note">
         <p>Star a game to keep it at the top here. Without stars, this shows every live game on national TV. Tap a game for its win odds, scoring and current drive.</p>
-        <p>Games are sorted by CFP stakes, how close and late the game is, and what's happening right now. Breaks are a best guess from ESPN's play feed: timeouts, scores, quarter ends and halftime, or no new play for 2½ minutes. ESPN runs a little behind the TV.</p>
+        <p>Games are sorted by CFP stakes, how close and late the game is, and what's happening right now. Breaks are a best guess from ESPN's game clock and play feed. A game is on when its clock is running. A stopped clock counts as a break after a timeout, a score, the end of a quarter, or 100 seconds with no new play. ESPN runs a few seconds behind the TV.</p>
       </div>
     </section>
 
@@ -303,7 +303,7 @@ const nm=t=>(t.r?'#'+t.r+' ':'')+t.n;
 const S={view:'now',now:{games:[],sb:null,ok:0,fail:false},rank:null,rankAt:0,bMode:'live',wSel:null,wFilter:store.get('flip-wfilter','big'),conf:store.get('flip-conf','8'),busy:false};
 let stars=store.get('flip-stars',{});
 const isStar=id=>!!stars[id];
-const wall=new Map(), seenAt=new Map(), prev=new Map(), hist=new Map(), OPEN=new Set(), D=new Map(), cache=new Map();
+const wall=new Map(), seenAt=new Map(), prev=new Map(), hist=new Map(), OPEN=new Set(), D=new Map(), cache=new Map(), clk=new Map(), initialPlays=new Set();
 
 async function getJSON(url,ttl){
   const c=cache.get(url);
@@ -357,18 +357,43 @@ function since(g){
   const w=wall.get(g.lp.id);
   return w!=null?Math.min(w,Date.now()):seenAt.get(g.lp.id)||null;
 }
+// The game clock updates every few seconds, well ahead of the play-by-play.
+// A clock that moved recently means the game is on. Stale readings never overwrite fresher ones.
+function noteClock(g,now){
+  if(g.state!=='in') return;
+  const k=clk.get(g.id), p=g.period, c=g.clock;
+  if(!k){ clk.set(g.id,{p,c,runAt:0,detail:g.detail,stName:g.stName}); return; }
+  if(p<k.p||(p===k.p&&c>k.c)){ g.period=k.p; g.clock=k.c; g.detail=k.detail; g.stName=k.stName; return; }
+  if(p===k.p&&c<k.c) k.runAt=now;
+  else if(p>k.p&&c>0&&c<900) k.runAt=now;
+  k.p=p; k.c=c; k.detail=g.detail; k.stName=g.stName;
+}
+// Last sign of action: the clock running, or the latest play. A play ESPN posts late counts from when it showed up.
+function activity(g){
+  let a=0;
+  if(g.lp){
+    const w=wall.get(g.lp.id), s=seenAt.get(g.lp.id);
+    if(w!=null) a=Math.min(w,Date.now());
+    if(s&&!initialPlays.has(g.lp.id)) a=Math.max(a,s-20000);
+    if(!a&&s) a=s;
+  }
+  const k=clk.get(g.id); if(k&&k.runAt) a=Math.max(a,k.runAt);
+  return a||null;
+}
 function classify(g,now){
   if(g.stName==='STATUS_HALFTIME'||/^half/i.test(g.detail)) return {brk:true,why:'Halftime'};
   if(g.stName==='STATUS_END_PERIOD'||/^end of/i.test(g.detail)) return {brk:true,why:g.detail.replace(/^end of/i,'End of')};
+  const k=clk.get(g.id);
+  if(k&&k.runAt&&now-k.runAt<30000) return {brk:false};
   if(!g.lp) return {brk:false};
   const t=g.lp.type.toLowerCase(), txt=g.lp.text.toLowerCase();
-  const s=since(g), age=s?(now-s)/1000:0;
+  const s=activity(g), age=s?(now-s)/1000:0;
   if(/timeout/.test(t)) return {brk:true,why:'Timeout'};
   if(/review/.test(txt)) return {brk:true,why:'Under review'};
   if(/end (period|of half|of quarter)/.test(t)) return {brk:true,why:'Quarter break'};
   if(/extra point|two-point|two point|2pt|field goal good|safety/.test(t)) return {brk:true,why:'After a score'};
   if(/touchdown/.test(t)) return age>90?{brk:true,why:'After a touchdown'}:{brk:false};
-  if(age>150) return {brk:true,why:'Stoppage'};
+  if(age>100) return {brk:true,why:'Stoppage'};
   return {brk:false};
 }
 // How much the CFP cares about one team (0 to 1). 12-team field, top 4 seeds get byes.
@@ -474,7 +499,7 @@ function row(g,c,s,now){
   const op=OPEN.has(g.id);
   const halfish=/^(Halftime|End of)/.test(c.why||'');
   const meta=c.brk
-    ? `<div class="mt"><div><span class="why">${esc(c.why)}</span>${since(g)&&!halfish?` <span class="since" data-since="${since(g)}">${mmss((now-since(g))/1000)}</span>`:''}</div><div>${halfish?'':esc(g.detail)}</div></div>`
+    ? `<div class="mt"><div><span class="why">${esc(c.why)}</span>${activity(g)&&!halfish?` <span class="since" data-since="${activity(g)}">${mmss((now-activity(g))/1000)}</span>`:''}</div><div>${halfish?'':esc(g.detail)}</div></div>`
     : `<div class="mt"><div>${esc(g.detail)}</div><div>${esc(g.dd)}</div></div>`;
   return `<li class="g${moved}${op?' open':''}" data-id="${esc(g.id)}" tabindex="0" aria-expanded="${op}"><div class="ch">${esc(g.ch.name)}${starBtn(g.id)}</div>${teamsBlock(g,s)}${meta}${op?detailHTML(g):''}</li>`;
 }
@@ -486,6 +511,7 @@ function renderNow(){
   const starredLive=live.filter(g=>isStar(g.id));
   const main=starredLive.length?starredLive:live.filter(g=>g.ch.national);
   const ids=new Set(main.map(g=>g.id));
+  S.mainIds=main.map(g=>g.id);
   const L=[],K=[]; let ring=false;
   for(const g of main){
     const c=classify(g,now), s=score(g,c,now);
@@ -845,7 +871,7 @@ async function poll(){
     const sb=await fetch(`${B}/scoreboard?groups=80&limit=300`,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
     const list=(sb.events||[]).map(parse).filter(Boolean);
     const now=Date.now();
-    for(const g of list) if(g.lp&&!seenAt.has(g.lp.id)) seenAt.set(g.lp.id,now);
+    for(const g of list){ if(g.lp&&!seenAt.has(g.lp.id)){ seenAt.set(g.lp.id,now); if(first) initialPlays.add(g.lp.id); } noteClock(g,now); }
     await Promise.all(list.filter(g=>g.state==='in'&&g.lp&&!wall.has(g.lp.id)).map(fetchWall));
     remember(list,now);
     S.now={games:list,sb,ok:Date.now(),fail:false};
@@ -853,6 +879,22 @@ async function poll(){
   }catch(e){S.now.fail=true}
   S.busy=false;
   renderView(!first);
+}
+async function fastPoll(){
+  if(document.hidden||S.view!=='now'||!S.mainIds||!S.mainIds.length) return;
+  const slot=Math.floor(Date.now()/3000);
+  await Promise.all(S.mainIds.slice(0,12).map(async id=>{
+    const g=S.now.games.find(x=>x.id===id); if(!g||g.state!=='in') return;
+    try{
+      const st=await fetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/college-football/events/${g.id}/competitions/${g.cid}/status?t=${slot}`,{cache:'no-store'}).then(r=>r.ok?r.json():null);
+      if(!st||!st.type) return;
+      if(typeof st.clock==='number') g.clock=st.clock;
+      if(st.period) g.period=st.period;
+      g.stName=st.type.name; g.state=st.type.state; g.detail=(st.type.shortDetail||g.detail).replace(' - ',' ');
+      noteClock(g,Date.now());
+    }catch(e){}
+  }));
+  if(S.view==='now') renderNow();
 }
 function renderView(fromPoll){
   if(S.view==='now') renderNow();
@@ -915,7 +957,7 @@ poll();
 loadRank();
 setInterval(poll,15000);
 setInterval(tick,1000);
-setInterval(()=>{ if(S.view==='now') renderNow(); },5000);
+setInterval(fastPoll,5000);
 }
 </script>
 </body>
