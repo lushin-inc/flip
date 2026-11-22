@@ -180,21 +180,21 @@ ul,ol{list-style:none;margin:0;padding:0}
 .vseg svg.i{width:19px;height:19px}
 .slistv{background:var(--sheet);border-radius:14px;padding:2px 18px 4px}
 .sgroup.fin .slistv{background:color-mix(in srgb,var(--sheet) 70%,var(--bg))}
-.sr{display:grid;grid-template-columns:92px minmax(0,1fr) 34px 22px 34px minmax(0,1fr) 112px;grid-template-areas:"st aw s1 d s2 hm ch";column-gap:10px;align-items:center;min-height:48px;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
+.sr{display:grid;grid-template-columns:92px minmax(0,250px) 36px 30px minmax(0,250px) 36px minmax(0,1fr);grid-template-areas:"st aw s1 d hm s2 ch";column-gap:10px;align-items:center;min-height:48px;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
 .slistv>.sr:first-child,.sday+.sr{border-top:0}
 .sr .st{grid-area:st;font-size:13px;color:var(--mute);display:flex;flex-direction:column;line-height:1.25;white-space:nowrap}
 .sr .st b{color:var(--ink);font-weight:600}
 .sr .st .up{color:var(--acc);font-weight:600}
 .sr .st .ca{color:var(--ink);font-weight:600}
-.sr .aw{grid-area:aw;display:flex;justify-content:flex-end;align-items:center;gap:9px}
+.sr .aw{grid-area:aw;display:flex;flex-direction:row-reverse;justify-content:flex-end;align-items:center;gap:9px}
 .sr .hm{grid-area:hm;display:flex;align-items:center;gap:9px}
 .sr .nmx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sr .nmx em{font-style:normal}
 .sr .lg{width:22px;height:22px;margin:0}
 .sr .s1,.sr .s2{font-weight:600;font-variant-numeric:tabular-nums;font-size:16px}
-.sr .s1{grid-area:s1;text-align:right}.sr .s2{grid-area:s2;text-align:left}
+.sr .s1{grid-area:s1;text-align:right}.sr .s2{grid-area:s2;text-align:right}
 .sr .d{grid-area:d;text-align:center;color:var(--mute);font-size:13px}
-.sr .ch2{grid-area:ch;text-align:right;font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr .ch2{grid-area:ch;text-align:left;padding-left:18px;font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sr .lo{color:var(--mute);font-weight:500}
 .sr .rec{font-size:12px;color:var(--mute);font-weight:400}
 .sday{font:600 14px/1 "Barlow Condensed",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.04em;color:var(--soft);padding:16px 0 6px}
@@ -258,7 +258,7 @@ ul,ol{list-style:none;margin:0;padding:0}
   .sr .s1,.sr .s2{text-align:right}
   .sr .d{display:none}
   .sr .st{align-items:flex-end;text-align:right;align-self:start}
-  .sr .ch2{align-self:start;font-size:12px}
+  .sr .ch2{align-self:start;font-size:12px;text-align:right;padding-left:0}
   .sr .lg{width:20px;height:20px}
   .sgrid li{padding:8px 10px}
   .sgrid .tm{font-size:14px;column-gap:6px}
@@ -942,7 +942,7 @@ function srow(g){
   const st=g.state==='in'?`<b>${esc(g.detail)}</b>`:g.state==='post'?esc(g.detail):esc(/TBD/i.test(g.detail)?'TBD':fmtTime(g.date));
   const nmx=t=>`<span class="nmx">${rk(t)}<em>${esc(t.n)}</em></span>`;
   const sv=(t,lo)=>sc?`<b class="${lo?'lo':''}">${esc(t.s)}</b>`:`<b class="rec">${esc(recStr(t))}</b>`;
-  return `<li class="sr"><div class="st">${st}${tag}</div><div class="aw${aLo?' lo':''}">${nmx(g.away)}${logo(g.away)}</div><span class="s1">${sv(g.away,aLo)}</span><span class="d">${sc?'–':'at'}</span><span class="s2">${sv(g.home,hLo)}</span><div class="hm${hLo?' lo':''}">${logo(g.home)}${nmx(g.home)}</div><div class="ch2">${esc(g.ch.name)}</div></li>`;
+  return `<li class="sr"><div class="st">${st}${tag}</div><div class="aw${aLo?' lo':''}">${nmx(g.away)}${logo(g.away)}</div><span class="s1">${sv(g.away,aLo)}</span><span class="d">${sc?'':'at'}</span><span class="s2">${sv(g.home,hLo)}</span><div class="hm${hLo?' lo':''}">${logo(g.home)}${nmx(g.home)}</div><div class="ch2">${esc(g.ch.name)}</div></li>`;
 }
 async function renderScores(){
   const sb=S.now.sb; if(!sb){$('#slist').innerHTML='<p class="empty">Loading</p>';return}
