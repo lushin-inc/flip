@@ -63,8 +63,6 @@ ul,ol{list-style:none;margin:0;padding:0}
 .zone{margin-top:18px;background:var(--zone);border-radius:14px;padding:6px 20px 10px}
 .zone h2,.brk h2{color:var(--soft)}
 .sub{color:var(--mute);font-size:14px;margin:0 0 6px}
-.note{color:var(--mute);font-size:13px;margin:22px 2px 0;max-width:74ch}
-.note p{margin:0 0 6px}
 .empty{color:var(--mute);padding:14px 0 12px;font-size:15px;cursor:default}
 .rk{font-size:12px;color:var(--mute);margin-right:5px;font-style:normal;font-variant-numeric:tabular-nums}
 .tn{display:flex;align-items:center;min-width:0}
@@ -306,10 +304,6 @@ ul,ol{list-style:none;margin:0;padding:0}
       <section class="sheet" id="alsoW" hidden style="margin-top:18px"><h2>Also live</h2><ul id="also" class="clist"></ul></section>
       <section class="zone" id="upW" hidden><h2 id="upH">Coming up</h2><ul id="up" class="clist"></ul></section>
       <section class="zone" id="finW" hidden><h2>Final</h2><ul id="fin" class="clist"></ul></section>
-      <div class="note">
-        <p>Star a game to keep it at the top here. Without stars, this shows every live game on national TV. Tap a game for its win odds, scoring and current drive.</p>
-        <p>Games are sorted by CFP stakes, how close and late the game is, and what's happening right now. Breaks are a best guess from ESPN's game clock and play feed. A game is on when its clock is running. A stopped clock counts as a break after a timeout, a score, the end of a quarter, or 100 seconds with no new play. ESPN runs a few seconds behind the TV.</p>
-      </div>
     </section>
 
     <section id="v-scores" class="view" hidden>
@@ -327,20 +321,18 @@ ul,ol{list-style:none;margin:0;padding:0}
 
     <section id="v-bracket" class="view" hidden>
       <div class="bhead">
-        <div><h2 id="bTitle">Projected bracket</h2><p class="sub" id="bSub"></p></div>
+        <div><h2 id="bTitle">Projected bracket</h2></div>
         <div class="seg" id="bSeg" hidden><button data-b="live" aria-pressed="true">Live</button><button data-b="ranked" aria-pressed="false">As ranked</button></div>
       </div>
       <div id="bracket" class="bk"></div>
       <section class="zone" id="outW" hidden><h2>First four out</h2><ul id="out" class="olist"></ul></section>
-      <div class="note" id="bNote"></div>
     </section>
 
     <section id="v-poll" class="view" hidden>
-      <div class="bhead"><div><h2>Projected AP Top 25</h2><p class="sub" id="pSub"></p></div></div>
+      <div class="bhead"><div><h2>Projected AP Top 25</h2></div></div>
       <div class="pgrid" id="poll"></div>
       <section class="zone" id="dropW" hidden><h2>Dropping out</h2><ul id="drop" class="plist"></ul></section>
       <section class="zone" id="nextW" hidden><h2>Next in line</h2><ul id="next" class="plist"></ul></section>
-      <div class="note"><p>This is an estimate. It starts from the latest AP poll's voting points. A loss cuts a team's points, most of all against an unranked team, and always by enough to move it a few spots. A win over a ranked team adds points. An unranked team with two or fewer losses that beats a ranked team can enter.</p><p>Results count once a game is final or called. A live game is called when ESPN gives the leader at least a 99.7% chance, or when the trailing team needs more scores than the time left allows. Games still in progress show their live score but don't move anyone yet.</p></div>
     </section>
 
     <section id="v-conferences" class="view" hidden>
@@ -349,7 +341,6 @@ ul,ol{list-style:none;margin:0;padding:0}
         <section class="sheet"><h2 id="cTitle">Standings</h2><div id="stand"></div></section>
         <section class="sheet"><h2>This week</h2><ul id="cgames" class="clist"></ul></section>
       </div>
-      <div class="note" id="cNote"></div>
     </section>
 
     <section id="v-week" class="view" hidden>
@@ -360,7 +351,6 @@ ul,ol{list-style:none;margin:0;padding:0}
         <div class="seg" id="wSeg"><button data-w="big" aria-pressed="true">Big games</button><button data-w="all" aria-pressed="false">All FBS</button></div>
       </div>
       <div id="wlist"></div>
-      <div class="note"><p>Big games are on national TV or have a ranked team. Each kickoff window is sorted by CFP stakes. Star a game and it moves to the top of Now when it kicks off.</p></div>
     </section>
   </main>
 </div>
@@ -812,16 +802,13 @@ function drawOfficial(post){
 async function renderBracket(){
   await loadRank();
   const R=S.rank&&(S.rank.cfp||null);
-  const sub=$('#bSub'), note=$('#bNote');
   let post=[];
   try{post=(await getJSON(`${B}/scoreboard?groups=80&limit=300&seasontype=3&week=1`,Date.now()>Date.parse('2026-12-06')?30000:600000)).events.map(parse).filter(Boolean)}catch(e){}
   const official=post.some(g=>/first round/i.test(g.note)&&+g.away.id>0&&+g.home.id>0);
   if(official){
     $('#bTitle').textContent='College Football Playoff';
-    sub.textContent='The official bracket, with live scores';
     $('#bSeg').hidden=true; $('#outW').hidden=true;
     $('#bracket').innerHTML=drawOfficial(post);
-    note.innerHTML='<p>First round Dec. 18–19 on campus, quarterfinals Dec. 30–Jan. 1, semifinals Jan. 14–15, title game Jan. 25 in Las Vegas.</p>';
     return;
   }
   if(!R){ $('#bracket').innerHTML='<p class="empty">Waiting for the CFP rankings</p>'; return; }
@@ -843,12 +830,10 @@ async function renderBracket(){
   const P=mode==='live'?liveP:base;
   const seeds=P.seeds.map(t=>mode==='live'?{...t,was:was.get(t.id),isNew:!was.has(t.id)}:t);
   $('#bTitle').textContent='Projected bracket';
-  sub.textContent=`From the CFP rankings${R.label?', '+R.label:''}`+(mode==='live'&&changed?', with today\'s results applied':'');
   const today=S.now.games;
   $('#bracket').innerHTML=drawBracket(seeds,today);
   $('#outW').hidden=!P.out.length;
   $('#out').innerHTML=P.out.map((t,i)=>{const st=teamStatus(t.id,today);return `<li><span class="sd">${12+i+1}</span>${logo(t)}<span class="tn"><em>${esc(t.n)}</em></span><span class="rc">${esc(recStr(st&&st.rec?st:t))}</span>${st?`<span class="bs"><span class="${st.bad?'bad':''}">${esc(st.txt)}</span></span>`:''}</li>`}).join('');
-  note.innerHTML=`<p>The projection takes the top 12 of the latest CFP rankings, guarantees spots to the highest-ranked team in the SEC, Big Ten, Big 12 and ACC and to the top Group of Six team, and seeds everyone in ranking order with byes for the top four. Conference title game winners replace the projected champions once those games are final.</p><p>Live applies results since the rankings came out: a team that's losing takes the loss and drops behind teams ranked up to six spots below it with fewer losses. The official bracket replaces this on Sunday, Dec. 6.</p>`;
   S.proj=liveP;
 }
 
@@ -905,7 +890,6 @@ async function renderConf(){
   const inConf=t=>id==='g6'?G6.has(t.conf):t.conf===id||(id==='37'&&(t.conf==='167'||t.conf==='168'));
   const cg=S.now.games.filter(g=>inConf(g.away)||inConf(g.home)).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date)||stakes(b)-stakes(a));
   $('#cgames').innerHTML=cg.map(g=>crow(g)).join('')||'<li class="empty">No games this week</li>';
-  $('#cNote').innerHTML='<p>Playoff shows where each team lands in the projected bracket on the Bracket tab. Standings order is ESPN\'s and may not reflect every tiebreaker.</p>';
 }
 
 // ---------- Called games ----------
@@ -1033,7 +1017,6 @@ async function renderPoll(){
   const nxt=order.slice(25,30);
   $('#nextW').hidden=!nxt.length;
   $('#next').innerHTML=nxt.map((t,i)=>{const l=line(t);return `<li><span class="pr">${26+i}</span>${logo(t)}<div class="pn"><em>${esc(t.n)}</em><span class="bs ${l.cls}">${esc(l.txt)}</span></div><span class="rc">${esc(rec(t))}</span></li>`}).join('');
-  $('#pSub').textContent=`From the AP poll${AP.label?', '+AP.label:''}. ${applied?`${applied} result${applied>1?'s':''} applied${early?`, ${early} called early`:''}`:'No results yet'}${pending?`; ${pending} game${pending>1?'s':''} still to finish`:''}.`;
 }
 
 // ---------- Week ----------
