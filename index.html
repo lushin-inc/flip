@@ -132,6 +132,9 @@ ul,ol{list-style:none;margin:0;padding:0}
 .uphd h2{margin:0}
 .pill{border:0;border-radius:999px;background:var(--sheet);color:var(--soft);font-weight:500;font-size:13px;min-height:30px;padding:0 13px;cursor:pointer}
 .pill[aria-pressed=true]{background:var(--ink);color:var(--sheet)}
+.sheet .pill{background:var(--zone)}
+.sheet .pill[aria-pressed=true]{background:var(--ink)}
+.sheet .uphd{margin:14px 0 6px}
 .pill:focus-visible,#up summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 #up details{border-top:1px solid var(--line)}
 #up details:first-child{border-top:0}
@@ -330,7 +333,7 @@ ul,ol{list-style:none;margin:0;padding:0}
     <section id="v-now" class="view">
       <div id="chaos" class="chaos" hidden></div>
       <div class="cols" id="cols">
-        <section class="sheet live"><h2>On now</h2><ul id="live"></ul></section>
+        <section class="sheet live"><div class="uphd"><h2>On now</h2><button id="liveTop" class="pill" type="button" aria-pressed="false">Top 25</button></div><ul id="live"></ul></section>
         <section class="sheet brk"><h2>In break</h2><ul id="brk"></ul></section>
       </div>
       <section class="sheet" id="noneW" hidden><p class="empty">No games on right now</p></section>
@@ -417,7 +420,7 @@ const isToday=d=>dayKey(d)===new Date().toDateString();
 const recStr=t=>t&&t.rec?`${t.rec.w}-${t.rec.l}`:'';
 const nm=t=>(t.r?'#'+t.r+' ':'')+t.n;
 
-const S={upTop:store.get('flip-uptop',false),upOpen:new Set(),sView:store.get('flip-sview','list'),sFilter:store.get('flip-sfilter','all'),sSel:null,view:'now',now:{games:[],sb:null,ok:0,fail:false},rank:null,rankAt:0,bMode:'live',wSel:null,wFilter:store.get('flip-wfilter','big'),conf:store.get('flip-conf','8'),busy:false};
+const S={liveTop:store.get('flip-livetop',false),upTop:store.get('flip-uptop',false),upOpen:new Set(),sView:store.get('flip-sview','list'),sFilter:store.get('flip-sfilter','all'),sSel:null,view:'now',now:{games:[],sb:null,ok:0,fail:false},rank:null,rankAt:0,bMode:'live',wSel:null,wFilter:store.get('flip-wfilter','big'),conf:store.get('flip-conf','8'),busy:false};
 let stars=store.get('flip-stars',{});
 const isStar=id=>!!stars[id];
 const wall=new Map(), seenAt=new Map(), prev=new Map(), hist=new Map(), OPEN=new Set(), D=new Map(), cache=new Map(), clk=new Map(), initialPlays=new Set();
@@ -625,8 +628,10 @@ function renderNow(){
   const now=Date.now(), all=S.now.games;
   const today=all.filter(g=>g.state==='in'||isToday(g.date));
   const live=today.filter(g=>g.state==='in');
-  const starredLive=live.filter(g=>isStar(g.id));
-  const main=starredLive.length?starredLive:live.filter(g=>g.ch.national);
+  const ranked=g=>g.away.r||g.home.r;
+  const pool=S.liveTop?live.filter(ranked):live;
+  const starredLive=pool.filter(g=>isStar(g.id));
+  const main=starredLive.length?starredLive:pool.filter(g=>S.liveTop||g.ch.national);
   const ids=new Set(main.map(g=>g.id));
   S.mainIds=main.map(g=>g.id);
   const L=[],K=[]; let ring=false;
@@ -642,17 +647,18 @@ function renderNow(){
   for(const {g,c} of [...L,...K]) prev.set(g.id,c.brk);
   if(ring&&chimeReady) chime();
   chimeReady=true;
-  $('#cols').hidden=!main.length;
-  $('#noneW').hidden=!!main.length||!S.now.ok;
-  $('#live').innerHTML=liveHTML||'<li class="empty">Every game is in a break</li>';
+  const keep=S.liveTop&&live.length>0;
+  $('#cols').hidden=!main.length&&!keep;
+  $('#noneW').hidden=!!main.length||!S.now.ok||keep;
+  $('#liveTop').setAttribute('aria-pressed',String(!!S.liveTop));
+  $('#live').innerHTML=liveHTML||(main.length?'<li class="empty">Every game is in a break</li>':'<li class="empty">No Top 25 games on right now</li>');
   $('#brk').innerHTML=brkHTML||'<li class="empty">Nothing in a break</li>';
   // Also live
-  const also=starredLive.length?live.filter(g=>!ids.has(g.id)&&(g.ch.national||g.away.r||g.home.r)).map(g=>({g,s:score(g,classify(g,now),now).total})).sort((a,b)=>b.s-a.s).map(x=>x.g):[];
+  const also=starredLive.length?pool.filter(g=>!ids.has(g.id)&&(g.ch.national||g.away.r||g.home.r)).map(g=>({g,s:score(g,classify(g,now),now).total})).sort((a,b)=>b.s-a.s).map(x=>x.g):[];
   $('#alsoW').hidden=!also.length;
   $('#also').innerHTML=also.map(g=>crow(g)).join('');
   // Coming up: every big game still to kick off this week, by day and kickoff time. Days start collapsed.
   const big=g=>isStar(g.id)||g.ch.national||g.away.r||g.home.r;
-  const ranked=g=>g.away.r||g.home.r;
   const upAll=all.filter(g=>g.state==='pre'&&big(g));
   const up=upAll.filter(g=>!S.upTop||ranked(g)).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
   const days=new Map();
@@ -1273,6 +1279,7 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#sNext')){ S.sSel++; renderScores(); return; }
   const vb=e.target.closest('#vSeg button');
   if(vb){ S.sView=vb.dataset.v; store.set('flip-sview',S.sView); renderScores(); return; }
+  if(e.target.closest('#liveTop')){ S.liveTop=!S.liveTop; store.set('flip-livetop',S.liveTop); renderNow(); return; }
   if(e.target.closest('#upTop')){ S.upTop=!S.upTop; store.set('flip-uptop',S.upTop); renderNow(); return; }
   if(e.target.closest('#bubBack')){ location.hash='#'+(S.backTo&&S.backTo!=='now'?S.backTo:'conferences'); return; }
   const sbtn=e.target.closest('#sSeg button');
