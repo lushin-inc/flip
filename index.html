@@ -128,7 +128,20 @@ ul,ol{list-style:none;margin:0;padding:0}
 .wbar .seg{margin-left:auto}
 .day{margin-top:16px}
 .day>h3{margin:0 0 4px}
-#up .day:first-child{margin-top:6px}
+.uphd{display:flex;align-items:center;gap:12px;margin:14px 0 4px}
+.uphd h2{margin:0}
+.pill{border:0;border-radius:999px;background:var(--sheet);color:var(--soft);font-weight:500;font-size:13px;min-height:30px;padding:0 13px;cursor:pointer}
+.pill[aria-pressed=true]{background:var(--ink);color:var(--sheet)}
+.pill:focus-visible,#up summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+#up details{border-top:1px solid var(--line)}
+#up details:first-child{border-top:0}
+#up summary{list-style:none;display:flex;align-items:center;gap:8px;padding:12px 0;cursor:pointer;color:var(--soft)}
+#up summary::-webkit-details-marker{display:none}
+#up summary h3{margin:0;color:inherit}
+#up summary svg.i{width:18px;height:18px;transition:transform .15s}
+#up details[open] summary svg.i{transform:rotate(90deg)}
+#up summary:hover{color:var(--ink)}
+#up details[open]{padding-bottom:6px}
 .tgp{display:grid;grid-template-columns:92px minmax(0,1fr);gap:14px;border-top:1px solid var(--line);padding-top:4px}
 .tgp:first-of-type{border-top:0}
 .tgp .tt{font:600 22px/1 "Barlow Condensed",system-ui,sans-serif;padding-top:12px;white-space:nowrap}
@@ -304,7 +317,7 @@ ul,ol{list-style:none;margin:0;padding:0}
       <section class="sheet" id="noneW" hidden><p class="empty">No games on right now</p></section>
       <section class="sheet" id="alsoW" hidden style="margin-top:18px"><h2>Also live</h2><ul id="also" class="clist"></ul></section>
       <section class="zone" id="finW" hidden><h2>Final</h2><ul id="fin" class="clist"></ul></section>
-      <section class="zone" id="upW" hidden><h2>Coming up</h2><div id="up"></div></section>
+      <section class="zone" id="upW" hidden><div class="uphd"><h2>Coming up</h2><button id="upTop" class="pill" type="button" aria-pressed="false">Top 25</button></div><div id="up"></div></section>
     </section>
 
     <section id="v-scores" class="view" hidden>
@@ -380,7 +393,7 @@ const isToday=d=>dayKey(d)===new Date().toDateString();
 const recStr=t=>t&&t.rec?`${t.rec.w}-${t.rec.l}`:'';
 const nm=t=>(t.r?'#'+t.r+' ':'')+t.n;
 
-const S={sView:store.get('flip-sview','list'),sFilter:store.get('flip-sfilter','all'),sSel:null,view:'now',now:{games:[],sb:null,ok:0,fail:false},rank:null,rankAt:0,bMode:'live',wSel:null,wFilter:store.get('flip-wfilter','big'),conf:store.get('flip-conf','8'),busy:false};
+const S={upTop:store.get('flip-uptop',false),upOpen:new Set(),sView:store.get('flip-sview','list'),sFilter:store.get('flip-sfilter','all'),sSel:null,view:'now',now:{games:[],sb:null,ok:0,fail:false},rank:null,rankAt:0,bMode:'live',wSel:null,wFilter:store.get('flip-wfilter','big'),conf:store.get('flip-conf','8'),busy:false};
 let stars=store.get('flip-stars',{});
 const isStar=id=>!!stars[id];
 const wall=new Map(), seenAt=new Map(), prev=new Map(), hist=new Map(), OPEN=new Set(), D=new Map(), cache=new Map(), clk=new Map(), initialPlays=new Set();
@@ -613,21 +626,25 @@ function renderNow(){
   const also=starredLive.length?live.filter(g=>!ids.has(g.id)&&(g.ch.national||g.away.r||g.home.r)).map(g=>({g,s:score(g,classify(g,now),now).total})).sort((a,b)=>b.s-a.s).map(x=>x.g):[];
   $('#alsoW').hidden=!also.length;
   $('#also').innerHTML=also.map(g=>crow(g)).join('');
-  // Coming up: every big game still to kick off this week, by day and kickoff time
+  // Coming up: every big game still to kick off this week, by day and kickoff time. Days start collapsed.
   const big=g=>isStar(g.id)||g.ch.national||g.away.r||g.home.r;
-  const up=all.filter(g=>g.state==='pre'&&big(g)).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
+  const ranked=g=>g.away.r||g.home.r;
+  const upAll=all.filter(g=>g.state==='pre'&&big(g));
+  const up=upAll.filter(g=>!S.upTop||ranked(g)).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
   const days=new Map();
   for(const g of up){const k=dayKey(g.date);if(!days.has(k))days.set(k,new Map());const tk=/TBD/i.test(g.detail)?'TBD':fmtTime(g.date);const m=days.get(k);if(!m.has(tk))m.set(tk,[]);m.get(tk).push(g)}
   let uh='';
   for(const [k,m] of days){
-    uh+=`<div class="day"><h3>${esc(isToday(k)?'Today':fmtDay(k))}</h3>`;
+    uh+=`<details data-k="${esc(k)}"${S.upOpen.has(k)?' open':''}><summary><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg><h3>${esc(isToday(k)?'Today':fmtDay(k))}</h3></summary>`;
     for(const [tk,gs] of m){
       gs.sort((a,b)=>(isStar(b.id)-isStar(a.id))||stakes(b)-stakes(a)||a.ch.sort-b.ch.sort);
       uh+=`<div class="tgp"><div class="tt">${esc(tk)}</div><ul class="clist">${gs.map(g=>crow(g,{noTime:true})).join('')}</ul></div>`;
     }
-    uh+='</div>';
+    uh+='</details>';
   }
-  $('#upW').hidden=!up.length;
+  if(!uh) uh='<p class="empty">No ranked games coming up</p>';
+  $('#upW').hidden=!upAll.length;
+  $('#upTop').setAttribute('aria-pressed',String(!!S.upTop));
   if($('#up').dataset.h!==uh){$('#up').innerHTML=uh;$('#up').dataset.h=uh}
   const fin=today.filter(g=>g.state==='post'&&big(g)).sort((a,b)=>(isStar(b.id)-isStar(a.id))||stakes(b)-stakes(a));
   $('#finW').hidden=!fin.length;
@@ -1155,12 +1172,18 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#sNext')){ S.sSel++; renderScores(); return; }
   const vb=e.target.closest('#vSeg button');
   if(vb){ S.sView=vb.dataset.v; store.set('flip-sview',S.sView); renderScores(); return; }
+  if(e.target.closest('#upTop')){ S.upTop=!S.upTop; store.set('flip-uptop',S.upTop); renderNow(); return; }
   const sbtn=e.target.closest('#sSeg button');
   if(sbtn){ S.sFilter=sbtn.dataset.s; store.set('flip-sfilter',S.sFilter); renderScores(); return; }
   if(e.target.closest('#wNext')){ S.wSel++; renderWeek(); return; }
   const li=e.target.closest('li.g');
   if(li&&!e.target.closest('.dt')){ const id=li.dataset.id; if(OPEN.has(id)) OPEN.delete(id); else { OPEN.add(id); loadDetail(id,!!(D.get(id)||{}).err); } renderNow(); }
 });
+document.addEventListener('toggle',e=>{
+  const d=e.target;
+  if(!d.matches||!d.matches('#up details')) return;
+  if(d.open) S.upOpen.add(d.dataset.k); else S.upOpen.delete(d.dataset.k);
+},true);
 document.addEventListener('keydown',e=>{
   const li=e.target.closest&&e.target.closest('li.g');
   if(li&&e.target===li&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); li.click(); const n=document.querySelector(`li.g[data-id="${li.dataset.id}"]`); if(n) n.focus(); }
