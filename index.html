@@ -128,6 +128,7 @@ ul,ol{list-style:none;margin:0;padding:0}
 .wbar .seg{margin-left:auto}
 .day{margin-top:16px}
 .day>h3{margin:0 0 4px}
+#up .day:first-child{margin-top:6px}
 .tgp{display:grid;grid-template-columns:92px minmax(0,1fr);gap:14px;border-top:1px solid var(--line);padding-top:4px}
 .tgp:first-of-type{border-top:0}
 .tgp .tt{font:600 22px/1 "Barlow Condensed",system-ui,sans-serif;padding-top:12px;white-space:nowrap}
@@ -302,8 +303,8 @@ ul,ol{list-style:none;margin:0;padding:0}
       </div>
       <section class="sheet" id="noneW" hidden><p class="empty">No games on right now</p></section>
       <section class="sheet" id="alsoW" hidden style="margin-top:18px"><h2>Also live</h2><ul id="also" class="clist"></ul></section>
-      <section class="zone" id="upW" hidden><h2 id="upH">Coming up</h2><ul id="up" class="clist"></ul></section>
       <section class="zone" id="finW" hidden><h2>Final</h2><ul id="fin" class="clist"></ul></section>
+      <section class="zone" id="upW" hidden><h2>Coming up</h2><div id="up"></div></section>
     </section>
 
     <section id="v-scores" class="view" hidden>
@@ -612,16 +613,22 @@ function renderNow(){
   const also=starredLive.length?live.filter(g=>!ids.has(g.id)&&(g.ch.national||g.away.r||g.home.r)).map(g=>({g,s:score(g,classify(g,now),now).total})).sort((a,b)=>b.s-a.s).map(x=>x.g):[];
   $('#alsoW').hidden=!also.length;
   $('#also').innerHTML=also.map(g=>crow(g)).join('');
-  // Coming up
+  // Coming up: every big game still to kick off this week, by day and kickoff time
   const big=g=>isStar(g.id)||g.ch.national||g.away.r||g.home.r;
-  let up=today.filter(g=>g.state==='pre'&&big(g)), upH='Coming up today';
-  if(!up.length&&!live.length){
-    const next=all.filter(g=>g.state==='pre'&&Date.parse(g.date)>now&&big(g)).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
-    if(next.length){const k=dayKey(next[0].date);up=next.filter(g=>dayKey(g.date)===k);upH='Next up, '+fmtDay(next[0].date)}
+  const up=all.filter(g=>g.state==='pre'&&big(g)).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
+  const days=new Map();
+  for(const g of up){const k=dayKey(g.date);if(!days.has(k))days.set(k,new Map());const tk=/TBD/i.test(g.detail)?'TBD':fmtTime(g.date);const m=days.get(k);if(!m.has(tk))m.set(tk,[]);m.get(tk).push(g)}
+  let uh='';
+  for(const [k,m] of days){
+    uh+=`<div class="day"><h3>${esc(isToday(k)?'Today':fmtDay(k))}</h3>`;
+    for(const [tk,gs] of m){
+      gs.sort((a,b)=>(isStar(b.id)-isStar(a.id))||stakes(b)-stakes(a)||a.ch.sort-b.ch.sort);
+      uh+=`<div class="tgp"><div class="tt">${esc(tk)}</div><ul class="clist">${gs.map(g=>crow(g,{noTime:true})).join('')}</ul></div>`;
+    }
+    uh+='</div>';
   }
-  up.sort((a,b)=>(isStar(b.id)-isStar(a.id))||Date.parse(a.date)-Date.parse(b.date)||stakes(b)-stakes(a));
-  $('#upW').hidden=!up.length; $('#upH').textContent=upH;
-  $('#up').innerHTML=up.slice(0,14).map(g=>crow(g)).join('');
+  $('#upW').hidden=!up.length;
+  if($('#up').dataset.h!==uh){$('#up').innerHTML=uh;$('#up').dataset.h=uh}
   const fin=today.filter(g=>g.state==='post'&&big(g)).sort((a,b)=>(isStar(b.id)-isStar(a.id))||stakes(b)-stakes(a));
   $('#finW').hidden=!fin.length;
   $('#fin').innerHTML=fin.slice(0,14).map(g=>crow(g)).join('');
