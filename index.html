@@ -148,6 +148,8 @@ ul,ol{list-style:none;margin:0;padding:0}
 .tgp{display:grid;grid-template-columns:92px minmax(0,1fr);gap:14px;border-top:1px solid var(--line);padding-top:4px}
 .tgp:first-of-type{border-top:0}
 .tgp .tt{font:600 22px/1 "Barlow Condensed",system-ui,sans-serif;padding-top:12px;white-space:nowrap}
+.tgp .tt .cd{display:block;margin-top:7px;font:500 13px/1 Figtree,system-ui,sans-serif;color:var(--soft);font-variant-numeric:tabular-nums}
+.tgp .tt .cd:empty{display:none}
 .tgp .clist li.c{grid-template-columns:84px minmax(0,1fr) auto 44px}
 /* Bracket */
 .bhead{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
@@ -303,7 +305,7 @@ ul,ol{list-style:none;margin:0;padding:0}
   .g .mt{grid-area:mt;text-align:left;display:flex;gap:12px;flex-wrap:wrap}
   .clist li.c,.tgp .clist li.c{grid-template-columns:minmax(0,1fr) 44px;grid-template-areas:"cc st" "tm st" "cs st";row-gap:4px}
   .c .cc{grid-area:cc;flex-direction:row;align-items:baseline;gap:10px}.c .ch{font-size:15px}.c .tm{grid-area:tm}.c .cs{grid-area:cs;text-align:left}.c .star{grid-area:st}.c .acts{grid-area:st}.clist li.c.hz,.tgp .clist li.c.hz{grid-template-columns:minmax(0,1fr) 76px}
-  .tgp{grid-template-columns:minmax(0,1fr);gap:0}.tgp .tt{padding-top:10px;font-size:19px}
+  .tgp{grid-template-columns:minmax(0,1fr);gap:0}.tgp .tt{padding-top:10px;font-size:19px}.tgp .tt .cd{display:inline-block;margin:0 0 0 10px}
   .wbar h2{min-width:0;font-size:20px}.wbar .seg{margin-left:0}
   .spl li{grid-template-columns:62px 40px minmax(0,1fr) auto}
   .sgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
@@ -697,14 +699,14 @@ function renderNow(){
     uh+=`<details data-k="${esc(k)}"${S.upOpen.has(k)?' open':''}><summary><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg><h3>${esc(isToday(k)?'Today':fmtDay(k))}</h3></summary>`;
     for(const [tk,gs] of m){
       gs.sort((a,b)=>(isStar(b.id)-isStar(a.id))||stakes(b)-stakes(a)||a.ch.sort-b.ch.sort);
-      uh+=`<div class="tgp"><div class="tt">${esc(tk)}</div><ul class="clist">${gs.map(g=>crow(g,{noTime:true,hide:true})).join('')}</ul></div>`;
+      uh+=`<div class="tgp"><div class="tt">${esc(tk)}${tk!=='TBD'?`<span class="cd" data-t="${Date.parse(gs[0].date)}"></span>`:''}</div><ul class="clist">${gs.map(g=>crow(g,{noTime:true,hide:true})).join('')}</ul></div>`;
     }
     uh+='</details>';
   }
   if(!uh) uh='<p class="empty">No ranked games coming up</p>';
   $('#upW').hidden=!upAll.length;
   $('#upTop').setAttribute('aria-pressed',String(!!S.upTop));
-  if($('#up').dataset.h!==uh){$('#up').innerHTML=uh;$('#up').dataset.h=uh}
+  if($('#up').dataset.h!==uh){$('#up').innerHTML=uh;$('#up').dataset.h=uh;tickCd()}
   const fin=today.filter(g=>g.state==='post'&&big(g)&&vis(g)).sort((a,b)=>(isStar(b.id)-isStar(a.id))||stakes(b)-stakes(a));
   $('#finW').hidden=!fin.length;
   $('#fin').innerHTML=fin.slice(0,14).map(g=>crow(g,{hide:true})).join('');
@@ -1326,16 +1328,26 @@ async function renderWeek(){
     h+=`<section class="day sheet"><h3>${esc(fmtDay(k))}</h3>`;
     for(const [tk,gs] of m){
       gs.sort((a,b)=>stakes(b)-stakes(a)||a.ch.sort-b.ch.sort);
-      h+=`<div class="tgp"><div class="tt">${esc(tk)}</div><ul class="clist">${gs.map(g=>crow(g,{noTime:true,note:w.type===3})).join('')}</ul></div>`;
+      h+=`<div class="tgp"><div class="tt">${esc(tk)}${tk!=='TBD'?`<span class="cd" data-t="${Date.parse(gs[0].date)}"></span>`:''}</div><ul class="clist">${gs.map(g=>crow(g,{noTime:true,note:w.type===3})).join('')}</ul></div>`;
     }
     h+='</section>';
   }
-  $('#wlist').innerHTML=h;
+  $('#wlist').innerHTML=h; tickCd();
 }
 
 // ---------- Data loop ----------
+// Kickoff countdown under each time slot that starts within two hours
+function tickCd(){
+  const now=Date.now();
+  for(const el of document.querySelectorAll('.cd')){
+    const r=+el.dataset.t-now; let s='';
+    if(r>0&&r<=72e5){const m=Math.ceil(r/6e4);s='in '+String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+    if(el.textContent!==s) el.textContent=s;
+  }
+}
 function tick(){
   const now=Date.now();
+  tickCd();
   for(const el of document.querySelectorAll('[data-since]')) el.textContent=mmss((now-+el.dataset.since)/1000);
   const u=$('#upd');
   if(!S.now.ok){u.textContent=S.now.fail?"Can't reach ESPN, retrying":'Loading';u.className=S.now.fail?'bad':'';return}
