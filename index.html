@@ -180,21 +180,38 @@ ul,ol{list-style:none;margin:0;padding:0}
 .olist .bs .bad{color:var(--acc);font-weight:600}
 .olist li>a{display:grid;grid-template-columns:24px 24px minmax(0,1fr) auto 18px;column-gap:10px;align-items:center;color:inherit;text-decoration:none}
 .olist li{display:block}
-.olist li>a>svg.i{width:16px;height:16px;color:var(--mute)}
+.olist li>a>svg.i{width:16px;height:16px;color:var(--mute);grid-column:5;grid-row:1}
 .olist li>a:hover em{text-decoration:underline;text-underline-offset:3px}
 .st a.tag.bub{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;white-space:nowrap}
 .st a.tag.bub:hover{text-decoration-color:currentColor}
+.g,.clist li.c{position:relative}
+.hidb{position:absolute;right:-19px;top:50%;transform:translateY(-50%);width:20px;height:30px;display:grid;place-items:center;border:0;background:none;padding:0;color:var(--mute);opacity:0;cursor:pointer;transition:opacity .15s}
+.g>.hidb{top:20px;transform:none}
+.hidb svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+li:hover>.hidb,.hidb:focus-visible{opacity:.45}
+.hidb:hover{opacity:1;color:var(--ink)}
+@media (hover:none){.hidb{opacity:.2}}
+.hidw{margin:28px 2px 0}
+.hidw>summary{list-style:none;cursor:pointer;color:var(--mute);font-size:13px;display:inline-flex;align-items:center;gap:3px;opacity:.7}
+.hidw>summary::-webkit-details-marker{display:none}
+.hidw>summary:hover{opacity:1}
+.hidw>summary svg.i{width:12px;height:12px;transition:transform .15s}
+.hidw[open]>summary svg.i{transform:rotate(90deg)}
+.hidw .clist{margin-top:6px;padding-right:22px;opacity:.7}
+.hidw .hidb{opacity:.5;right:-22px}
 /* Bubble page */
 .bubhd{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
 .bubhd .tn .lg{width:34px;height:34px}
 .bubhd h2{margin:0;font-size:30px}
 .bubhd .bst{color:var(--soft);font-size:15px;margin-top:4px}
 #bub .sheet{margin-top:14px}
-#bub .ok{color:var(--ink);font-weight:600;font-size:15px;padding:4px 0 10px}
+#bub .ok{color:var(--ink);font-weight:600;font-size:15px;padding:4px 0 10px;margin:0}
+#bub h3.sh{font-size:15px;color:var(--soft);margin:12px 0 2px}
 .nlist li{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
 .nlist li:first-child{border-top:0}
 .nlist .lgs{display:flex;gap:4px}.nlist .lgs .lg{margin:0}
 .nlist b{font-weight:600}
+.nlist li.cn{grid-template-columns:minmax(0,1fr);padding:9px 0}
 .nlist .gm{font-size:13px;color:var(--soft);margin-top:2px}
 .nlist .gm .live{color:var(--acc);font-weight:600}
 /* Scores */
@@ -275,6 +292,7 @@ ul,ol{list-style:none;margin:0;padding:0}
 }
 @media (max-width:520px){
   .sheet,.zone{padding:4px 14px 6px}
+  .hidb{right:-14px;width:15px}
   .g{grid-template-columns:minmax(0,1fr);grid-template-areas:"ch" "tm" "mt" "dt";row-gap:4px;align-items:start}
   .g>.ch{grid-area:ch;font-size:15px;flex-direction:row;align-items:center;justify-content:space-between}
   .g>.ch .star{margin:-12px -12px -12px 0}
@@ -340,6 +358,7 @@ ul,ol{list-style:none;margin:0;padding:0}
       <section class="sheet" id="alsoW" hidden style="margin-top:18px"><h2>Also live</h2><ul id="also" class="clist"></ul></section>
       <section class="zone" id="finW" hidden><h2>Final</h2><ul id="fin" class="clist"></ul></section>
       <section class="zone" id="upW" hidden><div class="uphd"><h2>Coming up</h2><button id="upTop" class="pill" type="button" aria-pressed="false">Top 25</button></div><div id="up"></div></section>
+      <details class="hidw" id="hidW" hidden><summary><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>Hidden</summary><ul id="hid" class="clist"></ul></details>
     </section>
 
     <section id="v-scores" class="view" hidden>
@@ -422,6 +441,11 @@ const nm=t=>(t.r?'#'+t.r+' ':'')+t.n;
 
 const S={liveTop:store.get('flip-livetop',false),upTop:store.get('flip-uptop',false),upOpen:new Set(),sView:store.get('flip-sview','list'),sFilter:store.get('flip-sfilter','all'),sSel:null,view:'now',now:{games:[],sb:null,ok:0,fail:false},rank:null,rankAt:0,bMode:'live',wSel:null,wFilter:store.get('flip-wfilter','big'),conf:store.get('flip-conf','8'),busy:false};
 let stars=store.get('flip-stars',{});
+let hidden=store.get('flip-hidden',{});
+for(const [k,v] of Object.entries(hidden)) if(Date.now()-v>5*864e5) delete hidden[k];
+const HIDE_I='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A9.6 9.6 0 0 1 12 5c5 0 9 4.5 10 7-.5 1.2-1.3 2.4-2.4 3.5M6.6 6.6C4.4 8 2.8 10.1 2 12c1 2.5 5 7 10 7 1.7 0 3.3-.5 4.6-1.3"/></svg>';
+const SHOW_I='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12c1-2.5 5-7 10-7s9 4.5 10 7c-1 2.5-5 7-10 7S3 14.5 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>';
+const hideBtn=(id,un)=>`<button class="hidb" type="button" data-hide="${esc(id)}" aria-label="${un?'Show this game again':'Hide this game'}">${un?SHOW_I:HIDE_I}</button>`;
 const isStar=id=>!!stars[id];
 const wall=new Map(), seenAt=new Map(), prev=new Map(), hist=new Map(), OPEN=new Set(), D=new Map(), cache=new Map(), clk=new Map(), initialPlays=new Set();
 
@@ -603,7 +627,7 @@ function crow(g,o={}){
   const tl=(t,side)=>`<span class="tn">${logo(t)}${rk(t)}<em>${esc(t.n)}</em></span><b class="${sc?(lead&&lead!==side?'lo':''):'rec'}">${sc?esc(t.s):esc(recStr(t))}</b>`;
   const right=g.state==='in'?`<span class="live">${esc(g.detail)}</span>`:g.state==='post'?esc(g.detail):esc(o.noTime?'':kick(g));
   const note=o.note&&g.note?`<span class="nt">${esc(g.note.replace(/^College Football Playoff /,'CFP '))}</span>`:'';
-  return `<li class="c" data-id="${esc(g.id)}"><div class="cc"><span class="ch">${esc(g.ch.name)}</span>${note}</div><div class="tm">${tl(g.away,'a')}${tl(g.home,'h')}</div><div class="cs">${right}</div>${starBtn(g.id)}</li>`;
+  return `<li class="c" data-id="${esc(g.id)}"><div class="cc"><span class="ch">${esc(g.ch.name)}</span>${note}</div><div class="tm">${tl(g.away,'a')}${tl(g.home,'h')}</div><div class="cs">${right}</div>${starBtn(g.id)}${o.hide?hideBtn(g.id):o.unhide?hideBtn(g.id,true):''}</li>`;
 }
 
 // ---------- Now ----------
@@ -621,13 +645,14 @@ function row(g,c,s,now){
   const meta=c.brk
     ? `<div class="mt"><div><span class="why">${esc(c.why)}</span>${activity(g)&&!halfish?` <span class="since" data-since="${activity(g)}">${mmss((now-activity(g))/1000)}</span>`:''}</div><div>${halfish?'':esc(g.detail)}</div></div>`
     : `<div class="mt"><div>${esc(g.detail)}</div><div>${esc(g.dd)}</div></div>`;
-  return `<li class="g${moved}${op?' open':''}" data-id="${esc(g.id)}" tabindex="0" aria-expanded="${op}"><div class="ch">${esc(g.ch.name)}${starBtn(g.id)}</div>${teamsBlock(g,s)}${meta}${op?detailHTML(g):''}</li>`;
+  return `<li class="g${moved}${op?' open':''}" data-id="${esc(g.id)}" tabindex="0" aria-expanded="${op}"><div class="ch">${esc(g.ch.name)}${starBtn(g.id)}</div>${teamsBlock(g,s)}${meta}${op?detailHTML(g):''}${hideBtn(g.id)}</li>`;
 }
 let chimeReady=false;
 function renderNow(){
   const now=Date.now(), all=S.now.games;
   const today=all.filter(g=>g.state==='in'||isToday(g.date));
-  const live=today.filter(g=>g.state==='in');
+  const vis=g=>!hidden[g.id];
+  const live=today.filter(g=>g.state==='in'&&vis(g));
   const ranked=g=>g.away.r||g.home.r;
   const pool=S.liveTop?live.filter(ranked):live;
   const starredLive=pool.filter(g=>isStar(g.id));
@@ -656,10 +681,10 @@ function renderNow(){
   // Also live
   const also=starredLive.length?pool.filter(g=>!ids.has(g.id)&&(g.ch.national||g.away.r||g.home.r)).map(g=>({g,s:score(g,classify(g,now),now).total})).sort((a,b)=>b.s-a.s).map(x=>x.g):[];
   $('#alsoW').hidden=!also.length;
-  $('#also').innerHTML=also.map(g=>crow(g)).join('');
+  $('#also').innerHTML=also.map(g=>crow(g,{hide:true})).join('');
   // Coming up: every big game still to kick off this week, by day and kickoff time. Days start collapsed.
   const big=g=>isStar(g.id)||g.ch.national||g.away.r||g.home.r;
-  const upAll=all.filter(g=>g.state==='pre'&&big(g));
+  const upAll=all.filter(g=>g.state==='pre'&&big(g)&&vis(g));
   const up=upAll.filter(g=>!S.upTop||ranked(g)).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
   const days=new Map();
   for(const g of up){const k=dayKey(g.date);if(!days.has(k))days.set(k,new Map());const tk=/TBD/i.test(g.detail)?'TBD':fmtTime(g.date);const m=days.get(k);if(!m.has(tk))m.set(tk,[]);m.get(tk).push(g)}
@@ -668,7 +693,7 @@ function renderNow(){
     uh+=`<details data-k="${esc(k)}"${S.upOpen.has(k)?' open':''}><summary><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg><h3>${esc(isToday(k)?'Today':fmtDay(k))}</h3></summary>`;
     for(const [tk,gs] of m){
       gs.sort((a,b)=>(isStar(b.id)-isStar(a.id))||stakes(b)-stakes(a)||a.ch.sort-b.ch.sort);
-      uh+=`<div class="tgp"><div class="tt">${esc(tk)}</div><ul class="clist">${gs.map(g=>crow(g,{noTime:true})).join('')}</ul></div>`;
+      uh+=`<div class="tgp"><div class="tt">${esc(tk)}</div><ul class="clist">${gs.map(g=>crow(g,{noTime:true,hide:true})).join('')}</ul></div>`;
     }
     uh+='</details>';
   }
@@ -676,9 +701,12 @@ function renderNow(){
   $('#upW').hidden=!upAll.length;
   $('#upTop').setAttribute('aria-pressed',String(!!S.upTop));
   if($('#up').dataset.h!==uh){$('#up').innerHTML=uh;$('#up').dataset.h=uh}
-  const fin=today.filter(g=>g.state==='post'&&big(g)).sort((a,b)=>(isStar(b.id)-isStar(a.id))||stakes(b)-stakes(a));
+  const fin=today.filter(g=>g.state==='post'&&big(g)&&vis(g)).sort((a,b)=>(isStar(b.id)-isStar(a.id))||stakes(b)-stakes(a));
   $('#finW').hidden=!fin.length;
-  $('#fin').innerHTML=fin.slice(0,14).map(g=>crow(g)).join('');
+  $('#fin').innerHTML=fin.slice(0,14).map(g=>crow(g,{hide:true})).join('');
+  const hid=all.filter(g=>hidden[g.id]&&(g.state!=='post'||isToday(g.date))).sort((a,b)=>((b.state==='in')-(a.state==='in'))||Date.parse(a.date)-Date.parse(b.date));
+  $('#hidW').hidden=!hid.length;
+  $('#hid').innerHTML=hid.map(g=>crow(g,{unhide:true})).join('');
   // Chaos
   const losing=[];
   for(const g of today){
@@ -762,6 +790,14 @@ async function gamesSince(since){
 }
 // The live rule: a team losing right now (or that lost since the rankings) takes the loss
 // and drops behind teams ranked up to six spots below it with fewer losses.
+// The top Group of Six team gets a bid even when the CFP Top 25 has none: take it from the AP poll and its others receiving votes.
+function g6Pick(){
+  const ap=S.rank&&S.rank.ap; if(!ap) return null;
+  const confOf=new Map(); for(const g of S.now.games){confOf.set(g.away.id,g.away.conf);confOf.set(g.home.id,g.home.conf)}
+  const cf=t=>t.conf||confOf.get(t.id)||'';
+  const t=[...ap.list,...ap.others.slice().sort((a,b)=>b.pts-a.pts)].find(x=>G6.has(cf(x)));
+  return t?{...t,conf:cf(t),r:99,L:t.rec?t.rec.l:0}:null;
+}
 function project(list,losses,champs){
   let order=list.map(t=>({...t,L:t.rec?t.rec.l:0}));
   if(losses){
@@ -782,7 +818,7 @@ function project(list,losses,champs){
     const t=won?(order.find(x=>x.id===won.id)||{...won,L:won.rec?won.rec.l:0,r:99}):order.find(x=>x.conf===c);
     if(t) auto.push({...t,auto:'champ'});
   }
-  const g6=order.find(x=>G6.has(x.conf));
+  const g6=order.find(x=>G6.has(x.conf))||g6Pick();
   if(g6&&!auto.some(a=>a.id===g6.id)) auto.push({...g6,auto:'g6'});
   const autoIds=new Set(auto.map(t=>t.id));
   const field=[...auto];
@@ -891,6 +927,105 @@ async function renderBracket(){
   S.proj=liveP;
 }
 
+// ---------- Conference title-game races ----------
+// Every remaining conference game is played out both ways. Ties for the two title-game spots go through the
+// steps the Power Four use: head-to-head, record vs common opponents, record vs the best-placed common opponents,
+// then opponents' combined conference record. Anything still tied after that is left as a tiebreaker.
+async function confSeason(conf){
+  const yr=new Date(S.rank.cfp.date).getUTCFullYear();
+  const j=await getJSON(`${B}/scoreboard?groups=${conf}&dates=${yr}&limit=500`,300000);
+  return (j.events||[]).map(parse).filter(Boolean);
+}
+function top2(ids,res){
+  const rec=new Map(ids.map(i=>[i,{w:0,l:0,vs:new Map()}]));
+  for(const [w,l] of res){
+    const a=rec.get(w),b=rec.get(l); if(!a||!b) continue;
+    a.w++; b.l++;
+    const x=a.vs.get(l)||{w:0,l:0}; x.w++; a.vs.set(l,x);
+    const y=b.vs.get(w)||{w:0,l:0}; y.l++; b.vs.set(w,y);
+  }
+  const pct=i=>{const r=rec.get(i);return r.w+r.l?r.w/(r.w+r.l):0};
+  const vsSet=(i,set)=>{let w=0,l=0;for(const o of set){const v=rec.get(i).vs.get(o);if(v){w+=v.w;l+=v.l}}return w+l?w/(w+l):null};
+  const order=ids.slice().sort((a,b)=>pct(b)-pct(a));
+  const steps=[
+    pool=>{ // head-to-head
+      const all=pool.every(a=>pool.every(b=>a===b||rec.get(a).vs.has(b)));
+      if(all) return new Map(pool.map(i=>[i,vsSet(i,pool.filter(o=>o!==i))]));
+      const sweep=pool.find(a=>pool.every(b=>a===b||((rec.get(a).vs.get(b)||{}).w>0&&!(rec.get(a).vs.get(b)||{}).l)));
+      return sweep?new Map(pool.map(i=>[i,i===sweep?1:0])):null;
+    },
+    pool=>{ // all common conference opponents
+      const common=ids.filter(o=>!pool.includes(o)&&pool.every(i=>rec.get(i).vs.has(o)));
+      return common.length?new Map(pool.map(i=>[i,vsSet(i,common)])):null;
+    },
+    pool=>{ // best-placed common opponents, working down the standings
+      const common=order.filter(o=>!pool.includes(o)&&pool.every(i=>rec.get(i).vs.has(o)));
+      const tiers=[];for(const o of common){const last=tiers[tiers.length-1];if(last&&pct(last[0])===pct(o))last.push(o);else tiers.push([o])}
+      for(const tier of tiers){const m=new Map(pool.map(i=>[i,vsSet(i,tier)]));if(new Set(m.values()).size>1) return m}
+      return null;
+    },
+    pool=>new Map(pool.map(i=>{let w=0,l=0;for(const [o,v] of rec.get(i).vs){const r=rec.get(o);w+=r.w*(v.w+v.l);l+=r.l*(v.w+v.l)}return [i,w+l?Math.round(w/(w+l)*1e6):0]})),
+  ];
+  const chosen=[]; let spots=2, open=null;
+  const groups=[];for(const i of order){const last=groups[groups.length-1];if(last&&pct(last[0])===pct(i))last.push(i);else groups.push([i])}
+  for(const grp of groups){
+    if(spots<=0) break;
+    if(grp.length<=spots){chosen.push(...grp);spots-=grp.length;continue}
+    let pool=grp.slice();
+    outer: while(spots>0&&pool.length>spots){
+      for(const st of steps){
+        const m=st(pool); if(!m) continue;
+        const best=Math.max(...pool.map(i=>m.get(i)??-1)), top=pool.filter(i=>(m.get(i)??-1)===best);
+        if(top.length===pool.length) continue;
+        if(top.length<=spots){chosen.push(...top);spots-=top.length;pool=pool.filter(i=>!top.includes(i));continue outer}
+        pool=top; continue outer;
+      }
+      open={teams:pool,spots}; spots=0; break;
+    }
+    if(spots>0&&pool.length<=spots){chosen.push(...pool);spots-=pool.length}
+  }
+  return {chosen,open};
+}
+// For one team: every way the remaining conference games can go, and whether it lands a title-game spot.
+function titleRace(conf,games,me){
+  const cg=games.filter(g=>g.confGame&&g.away.conf===conf&&g.home.conf===conf&&!/championship/i.test(g.note));
+  const ids=[...new Set(cg.flatMap(g=>[g.away.id,g.home.id]))];
+  if(!ids.includes(me)) return null;
+  const base=cg.filter(g=>g.state==='post'&&+g.away.s!==+g.home.s).map(g=>+g.away.s>+g.home.s?[g.away.id,g.home.id]:[g.home.id,g.away.id]);
+  const left=cg.filter(g=>g.state!=='post').sort((a,b)=>Date.parse(a.date)-Date.parse(b.date)).slice(0,12);
+  const out=[];
+  for(let m=0;m<(1<<left.length);m++){
+    const res=base.slice(); left.forEach((g,i)=>res.push((m>>i)&1?[g.away.id,g.home.id]:[g.home.id,g.away.id]));
+    const r=top2(ids,res);
+    out.push(r.chosen.includes(me)?'in':r.open&&r.open.teams.includes(me)?'tie':'out');
+  }
+  return {left,out};
+}
+// Collapse the winning scenarios into the fewest plain conditions (each a list of game results).
+function conditions(n,ok){
+  let terms=[];for(let m=0;m<(1<<n);m++) if(ok(m)) terms.push(Array.from({length:n},(_,i)=>(m>>i)&1));
+  let changed=true;
+  while(changed){
+    changed=false; const used=new Set(), next=[];
+    for(let a=0;a<terms.length;a++) for(let b=a+1;b<terms.length;b++){
+      let d=-1,c=0;for(let i=0;i<n;i++) if(terms[a][i]!==terms[b][i]){c++;d=i}
+      if(c===1&&terms[a][d]!==-1&&terms[b][d]!==-1){const t=terms[a].slice();t[d]=-1;if(!next.some(x=>x.join()===t.join()))next.push(t);used.add(a);used.add(b);changed=true}
+    }
+    terms=[...next,...terms.filter((_,i)=>!used.has(i))];
+  }
+  const primes=[...new Map(terms.map(t=>[t.join(),t])).values()];
+  const hits=(t,m)=>t.every((v,i)=>v===-1||v===((m>>i)&1));
+  let need=[];for(let m=0;m<(1<<n);m++) if(ok(m)) need.push(m);
+  const pick=[];
+  while(need.length){
+    let best=null,bc=-1;
+    for(const t of primes){const c=need.filter(m=>hits(t,m)).length, lits=t.filter(v=>v!==-1).length;if(c>bc||(c===bc&&best&&lits<best.filter(v=>v!==-1).length)){best=t;bc=c}}
+    if(!best||bc<=0) break;
+    pick.push(best); need=need.filter(m=>!hits(best,m));
+  }
+  return pick.sort((a,b)=>a.filter(x=>x!==-1).length-b.filter(x=>x!==-1).length);
+}
+
 // ---------- Bubble: what a team just outside the projected field needs this week ----------
 // Uses the same model as the bracket: finished results count, then each remaining game is tried both ways.
 async function renderBubble(){
@@ -916,7 +1051,7 @@ async function renderBubble(){
   head.innerHTML=`<div><span class="tn">${logo(me)}<h2>${esc(me.n)}</h2></span><div class="bst">${esc([me.r?'CFP No. '+me.r:'',recStr(me),where].filter(Boolean).join(', '))}</div></div>`;
   const left=games.filter(g=>g.state!=='post').sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
   const mine=left.find(g=>g.away.id===id||g.home.id===id);
-  const playedToday=games.find(g=>g.state==='post'&&(g.away.id===id||g.home.id===id)&&isToday(g.date));
+  const playedToday=games.filter(g=>g.state==='post'&&(g.away.id===id||g.home.id===id)).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date))[0];
   const L0=new Map(done);
   if(mine){ const op=mine.away.id===id?mine.home:mine.away; L0.set(op.id,mine); }
   const ranked=new Set(R.list.map(t=>t.id));
@@ -938,13 +1073,21 @@ async function renderBubble(){
     }
   }
   let title='';
+  const cn=(CONFS.find(c=>c[0]===me.conf)||[])[1]||'conference';
   if(P4.has(me.conf)&&!champs[me.conf]){
     try{
-      const j=await getJSON(STAND+me.conf,300000);
-      const ent=[];const walk=n=>{if(n.standings&&n.standings.entries)ent.push(...n.standings.entries);for(const c of n.children||[])walk(c)};walk(j);
-      const i=ent.findIndex(e=>e.team&&String(e.team.id)===id);
-      const cn=(CONFS.find(c=>c[0]===me.conf)||[])[1]||'conference';
-      if(i>=0&&i<2) title=`<li><span class="lgs">${logo(me)}</span><div><b>Win the ${esc(cn)} championship</b><div class="gm">${i===0?'1st':'2nd'} in the ${esc(cn)} standings</div></div></li>`;
+      const race=titleRace(me.conf,await confSeason(me.conf),id);
+      if(race){
+        const n=race.left.length, res=(g,bit)=>{const w=bit?g.away:g.home,l=bit?g.home:g.away;return w.id===id?`Beat ${l.n}`:`${w.n} beats ${l.n}`};
+        const lines=terms=>terms.map(tm=>{const parts=tm.map((v,i)=>v===-1?null:res(race.left[i],v)).filter(Boolean).sort((x,y)=>/^Beat /.test(y)-/^Beat /.test(x));return `<li class="cn"><b>${esc(parts.length?parts.join(', '):'Already in')}</b></li>`}).join('');
+        const inT=conditions(n,m=>race.out[m]==='in'), tieT=conditions(n,m=>race.out[m]==='tie');
+        if(inT.length||tieT.length){
+          title+=`<section class="sheet"><h2>Win the ${esc(cn)}</h2>`;
+          if(inT.length) title+=`<h3 class="sh">${inT.length===1&&inT[0].every(v=>v===-1)?'In the title game':'Gets a title-game spot if'}</h3><ul class="nlist">${inT.every(t=>t.every(v=>v===-1))?'':lines(inT)}</ul>`;
+          if(tieT.length) title+=`<h3 class="sh">Goes to later tiebreakers if</h3><ul class="nlist">${lines(tieT)}</ul>`;
+          title+=`<p class="ok">Then win the title game for the automatic bid</p></section>`;
+        }
+      }
     }catch(e){}
   }
   const gm=(g,team)=>{
@@ -955,14 +1098,17 @@ async function renderBubble(){
   const need=o=>`<li><span class="lgs">${logo(o.lo)}</span><div><b>${esc(o.lo.n)} loses</b><div class="gm">${gm(o.g,o.lo)}</div></div></li>`;
   let h='';
   h+='<section class="sheet"><h2>This week</h2>';
-  if(mine) h+=`<ul class="clist">${crow(mine)}</ul>${winAlone?`<p class="ok">A win puts ${esc(me.n)} in the field</p>`:''}`;
+  if(mine) h+=`<ul class="clist">${crow(mine)}</ul>`;
   else if(playedToday) h+=`<ul class="clist">${crow(playedToday)}</ul>`;
   else h+='<p class="empty">No game this week</p>';
   h+='</section>';
-  if(singles.length) h+=`<section class="sheet"><h2>${mine?'Plus one of these':'Needs one of these'}</h2><ul class="nlist">${singles.map(need).join('')}</ul></section>`;
-  if(pairs.length) h+=`<section class="sheet"><h2>${mine?'Plus two of these':'Needs two of these'}</h2><ul class="nlist">${pairs.slice(0,8).map(([x,y])=>`<li><span class="lgs">${logo(x.lo)}${logo(y.lo)}</span><div><b>${esc(x.lo.n)} and ${esc(y.lo.n)} both lose</b><div class="gm">${esc(x.lo.n)}: ${gm(x.g,x.lo)}</div><div class="gm">${esc(y.lo.n)}: ${gm(y.g,y.lo)}</div></div></li>`).join('')}</ul></section>`;
-  if(title) h+=`<section class="sheet"><h2>Or</h2><ul class="nlist">${title}</ul></section>`;
-  if(!winAlone&&!singles.length&&!pairs.length&&!title&&!seed) h+=`<p class="empty">No one or two results get ${esc(me.n)} in this week</p>`;
+  h+=title;
+  h+='<section class="sheet"><h2>At-large spot</h2>';
+  if(winAlone&&mine) h+=`<p class="ok">A win puts ${esc(me.n)} in the projected field</p>`;
+  if(singles.length) h+=`<h3 class="sh">${mine?'Win, plus one of these':'Needs one of these'}</h3><ul class="nlist">${singles.map(need).join('')}</ul>`;
+  if(pairs.length) h+=`<h3 class="sh">${mine?'Win, plus two of these':'Needs two of these'}</h3><ul class="nlist">${pairs.slice(0,8).map(([x,y])=>`<li><span class="lgs">${logo(x.lo)}${logo(y.lo)}</span><div><b>${esc(x.lo.n)} and ${esc(y.lo.n)} both lose</b><div class="gm">${esc(x.lo.n)}: ${gm(x.g,x.lo)}</div><div class="gm">${esc(y.lo.n)}: ${gm(y.g,y.lo)}</div></div></li>`).join('')}</ul>`;
+  if(!winAlone&&!singles.length&&!pairs.length) h+=seed?`<p class="ok">In the projected field now</p>`:`<p class="empty">No one or two results this week get ${esc(me.n)} in</p>`;
+  h+='</section>';
   if(box.dataset.h!==h){ box.innerHTML=h; box.dataset.h=h; }
 }
 
@@ -1266,6 +1412,8 @@ function setTheme(t){
 setTheme(document.documentElement.dataset.theme==='dark'?'dark':'light');
 $('#theme').addEventListener('click',()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
 document.addEventListener('click',e=>{
+  const hb=e.target.closest('.hidb');
+  if(hb){ e.stopPropagation(); const id=hb.dataset.hide; if(hidden[id]) delete hidden[id]; else hidden[id]=Date.now(); store.set('flip-hidden',hidden); renderNow(); return; }
   const sb=e.target.closest('.star');
   if(sb){ e.stopPropagation(); const id=sb.dataset.star; if(stars[id]) delete stars[id]; else stars[id]=Date.now(); store.set('flip-stars',stars); renderView(false); return; }
   const cb=e.target.closest('#chips button');
